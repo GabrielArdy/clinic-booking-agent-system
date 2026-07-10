@@ -4,8 +4,9 @@ import MessageList from './MessageList';
 import QuickReplies from './QuickReplies';
 import Composer from './Composer';
 import ConfirmationCard from './ConfirmationCard';
+import { IconBrand, IconWarning, IconMinimize } from '../icons';
 
-export default function ChatWidget() {
+export default function ChatWidget({ onClose }) {
   const { messages, turn, pending, error, ready, send, restart } = useChat();
 
   const stage = turn?.stage;
@@ -18,11 +19,16 @@ export default function ChatWidget() {
   return (
     <section className="chat" aria-label="Book an appointment">
       <header className="chat__header">
-        <div className="chat__avatar" aria-hidden="true">🩺</div>
-        <div>
+        <div className="chat__avatar" aria-hidden="true"><IconBrand /></div>
+        <div className="chat__id">
           <strong>City Care Clinic</strong>
           <span className="chat__status">Typically replies instantly</span>
         </div>
+        {onClose && (
+          <button type="button" className="chat__min" onClick={onClose} aria-label="Minimize chat">
+            <IconMinimize aria-hidden="true" />
+          </button>
+        )}
       </header>
 
       {inFlow && <ProgressStepper stage={stage} />}
@@ -32,7 +38,7 @@ export default function ChatWidget() {
       {/* Domain notes from the turn (e.g. "That slot is no longer available"). */}
       {turn?.errors?.length > 0 && (
         <div className="chat__notes" role="status">
-          {turn.errors.map((e, i) => <p key={i} className="chat__note">⚠︎ {e}</p>)}
+          {turn.errors.map((e, i) => <p key={i} className="chat__note"><IconWarning aria-hidden="true" /> {e}</p>)}
         </div>
       )}
 

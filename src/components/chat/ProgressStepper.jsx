@@ -1,3 +1,5 @@
+import { IconCheck } from '../icons';
+
 // Booking progress. Derived purely from `stage` — no local state to drift.
 const STEPS = [
   { key: 'specialty', label: 'Specialty', stages: ['select_specialty'] },
@@ -25,7 +27,7 @@ export default function ProgressStepper({ stage }) {
         return (
           <li key={step.key} className={`stepper__item stepper__item--${state}`}
               aria-current={isCurrent ? 'step' : undefined}>
-            <span className="stepper__dot" aria-hidden="true">{isDone ? '✓' : ''}</span>
+            <span className="stepper__dot" aria-hidden="true">{isDone ? <IconCheck /> : ''}</span>
             <span className="stepper__label">{step.label}</span>
           </li>
         );

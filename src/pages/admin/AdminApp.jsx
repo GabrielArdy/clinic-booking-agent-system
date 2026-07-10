@@ -6,15 +6,19 @@ import Doctors from './sections/Doctors';
 import Schedules from './sections/Schedules';
 import Exceptions from './sections/Exceptions';
 import Appointments from './sections/Appointments';
+import {
+  IconBrand, IconDashboard, IconDoctors, IconSchedules,
+  IconExceptions, IconAppointments, IconBack, IconSignOut,
+} from '../../components/icons';
 import './admin.css';
 
 const TOKEN_KEY = 'clinicAdminToken';
 const NAV = [
-  { key: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { key: 'doctors', label: 'Doctors', icon: '👩‍⚕️' },
-  { key: 'schedules', label: 'Schedules', icon: '🗓️' },
-  { key: 'exceptions', label: 'Exceptions', icon: '🚫' },
-  { key: 'appointments', label: 'Appointments', icon: '📋' },
+  { key: 'dashboard', label: 'Dashboard', Icon: IconDashboard },
+  { key: 'doctors', label: 'Doctors', Icon: IconDoctors },
+  { key: 'schedules', label: 'Schedules', Icon: IconSchedules },
+  { key: 'exceptions', label: 'Exceptions', Icon: IconExceptions },
+  { key: 'appointments', label: 'Appointments', Icon: IconAppointments },
 ];
 const SECTIONS = { dashboard: Dashboard, doctors: Doctors, schedules: Schedules, exceptions: Exceptions, appointments: Appointments };
 
@@ -34,23 +38,23 @@ export default function AdminApp() {
     <div className="admin">
       <aside className="admin__side">
         <a className="admin__brand" href="#/">
-          <span aria-hidden="true">🩺</span> City Care Clinic
+          <IconBrand aria-hidden="true" /> City Care Clinic
         </a>
         <nav className="admin__nav" aria-label="Admin sections">
-          {NAV.map((n) => (
+          {NAV.map(({ key, label, Icon }) => (
             <button
-              key={n.key}
-              className={`admin__navitem ${section === n.key ? 'is-active' : ''}`}
-              aria-current={section === n.key ? 'page' : undefined}
-              onClick={() => navigate(`/admin/${n.key}`)}
+              key={key}
+              className={`admin__navitem ${section === key ? 'is-active' : ''}`}
+              aria-current={section === key ? 'page' : undefined}
+              onClick={() => navigate(`/admin/${key}`)}
             >
-              <span aria-hidden="true">{n.icon}</span> {n.label}
+              <Icon aria-hidden="true" /> {label}
             </button>
           ))}
         </nav>
         <div className="admin__side-foot">
-          <button className="admin__navitem" onClick={() => navigate('/')}>← Back to booking</button>
-          <button className="admin__navitem" onClick={signOut}>⎋ Sign out</button>
+          <button className="admin__navitem" onClick={() => navigate('/')}><IconBack aria-hidden="true" /> Back to booking</button>
+          <button className="admin__navitem" onClick={signOut}><IconSignOut aria-hidden="true" /> Sign out</button>
         </div>
       </aside>
 

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { navigate } from '../../lib/router';
+import { IconBrand } from '../../components/icons';
 
 export default function Login({ onSubmit }) {
   const [token, setToken] = useState('');
   return (
     <div className="admin-login">
       <form className="card admin-login__card" onSubmit={(e) => { e.preventDefault(); onSubmit(token.trim()); }}>
-        <span className="admin-login__mark" aria-hidden="true">🩺</span>
+        <span className="admin-login__mark" aria-hidden="true"><IconBrand /></span>
         <h1>Admin Console</h1>
         <p className="admin-login__lead">Enter your admin token to manage the clinic.</p>
         <label className="field">

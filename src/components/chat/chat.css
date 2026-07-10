@@ -11,11 +11,20 @@
 }
 .chat__avatar {
   width: 40px; height: 40px; flex: none; border-radius: var(--r-full);
-  display: grid; place-items: center; background: var(--c-primary-soft); font-size: 20px;
+  display: grid; place-items: center; background: var(--c-primary-soft);
 }
+.chat__avatar svg { width: 21px; height: 21px; color: var(--c-primary); }
+.chat__id { flex: 1; min-width: 0; }
 .chat__header strong { display: block; }
 .chat__status { font-size: var(--fs-xs); color: var(--c-success); }
 .chat__status::before { content: '● '; }
+.chat__min {
+  flex: none; width: 32px; height: 32px; border-radius: var(--r-sm);
+  border: none; background: transparent; color: var(--c-muted);
+  display: grid; place-items: center; transition: background 120ms ease, color 120ms ease;
+}
+.chat__min svg { font-size: 22px; }
+.chat__min:hover { background: var(--c-subtle-2); color: var(--c-text); }
 
 /* Stepper */
 .stepper {
@@ -33,6 +42,7 @@
   background: var(--c-border);
 }
 .stepper__label { font-size: var(--fs-xs); color: var(--c-muted); }
+.stepper__dot svg { font-size: 12px; }
 .stepper__item--current .stepper__dot { background: var(--c-primary); }
 .stepper__item--current .stepper__label { color: var(--c-text); font-weight: var(--fw-semibold); }
 .stepper__item--done .stepper__dot { background: var(--c-success); }
@@ -112,6 +122,7 @@
   width: 44px; height: 44px; flex: none; border: none; border-radius: var(--r-full);
   background: var(--c-primary); color: #fff; font-size: 16px;
 }
+.composer__send svg { font-size: 19px; }
 .composer__send:hover:not(:disabled) { background: var(--c-primary-hover); }
 .composer__send:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -134,7 +145,9 @@
 }
 .confirm-card--done { border-color: var(--c-success); background: var(--c-success-soft); }
 .confirm-card__head { display: flex; gap: var(--s-3); align-items: flex-start; margin-bottom: var(--s-3); }
-.confirm-card__icon { font-size: 22px; }
+.confirm-card__icon { line-height: 0; }
+.confirm-card__icon svg { font-size: 24px; color: var(--c-primary); }
+.confirm-card--done .confirm-card__icon svg { color: var(--c-success); }
 .confirm-card__ref { font-size: var(--fs-sm); color: var(--c-muted); margin-top: 2px; }
 .confirm-card__ref code {
   font-weight: var(--fw-semibold); color: var(--c-text);

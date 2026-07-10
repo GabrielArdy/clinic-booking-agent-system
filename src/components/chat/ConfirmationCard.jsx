@@ -1,3 +1,5 @@
+import { IconSuccess, IconReview } from '../icons';
+
 // Built from collectedEntities (contract §4/§5). Same card serves the review
 // (confirm_booking) and success (booking_complete) states.
 export default function ConfirmationCard({ entities, complete }) {
@@ -21,7 +23,7 @@ export default function ConfirmationCard({ entities, complete }) {
   return (
     <div className={`confirm-card ${complete ? 'confirm-card--done' : ''}`}>
       <div className="confirm-card__head">
-        <span className="confirm-card__icon" aria-hidden="true">{complete ? '✓' : '📋'}</span>
+        <span className="confirm-card__icon" aria-hidden="true">{complete ? <IconSuccess /> : <IconReview />}</span>
         <div>
           <strong>{complete ? "You're booked!" : 'Please confirm your booking'}</strong>
           {complete && bookingReference && (

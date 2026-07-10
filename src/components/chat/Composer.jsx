@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IconSend } from '../icons';
 
 // Free-text input — always available beside chips (contract §3 requires free text).
 // Uncontrolled-ish: one local state for the draft, submitted on send. Cheap enough
@@ -28,7 +29,7 @@ export default function Composer({ disabled, onSend }) {
       />
       <button className="composer__send" type="submit" disabled={disabled || !draft.trim()}
               aria-label="Send message">
-        ➤
+        <IconSend aria-hidden="true" />
       </button>
     </form>
   );

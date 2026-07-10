@@ -28,6 +28,10 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 
 :focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-sm); }
 
+/* react-icons (BoxIcons) render inline <svg>; keep them aligned + currentColor. */
+svg { display: inline-block; vertical-align: middle; flex: none; }
+.btn svg { font-size: 1.1em; }
+
 /* Utility: visually hidden but readable by screen readers */
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

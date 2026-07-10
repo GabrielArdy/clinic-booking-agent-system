@@ -14,12 +14,14 @@
   width: 34px; height: 34px; border-radius: var(--r-md); display: grid; place-items: center;
   background: linear-gradient(180deg, #12857b, var(--c-primary)); box-shadow: var(--e-primary);
 }
+.brand__mark svg { width: 19px; height: 19px; color: #fff; }
+.hero__badges svg { font-size: 14px; color: var(--c-primary); }
 .brand__name { font-weight: var(--fw-semibold); }
 
 .public__hero {
   position: relative; isolation: isolate;
   flex: 1; display: flex; align-items: center;
-  padding: var(--s-10) var(--s-6);
+  padding: var(--s-12) var(--s-8);
 }
 /* Clinic photo, full-bleed behind the hero. */
 .public__hero::before {
@@ -27,46 +29,74 @@
   background-image: var(--hero-img);
   background-size: cover; background-position: center right;
 }
-/* White scrim — strongest on the left so dark copy stays AA-readable, fading
-   right where the (white) chat card sits. */
+/* White scrim — strongest on the left so the copy stays AA-readable over the
+   bright photo, fading toward the right of the image. */
 .public__hero::after {
   content: ''; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(
     100deg,
-    rgba(248, 250, 252, 0.95) 0%,
-    rgba(248, 250, 252, 0.85) 40%,
-    rgba(248, 250, 252, 0.55) 100%
+    rgba(248, 250, 252, 0.96) 0%,
+    rgba(248, 250, 252, 0.86) 42%,
+    rgba(248, 250, 252, 0.45) 100%
   );
 }
-.hero__inner {
-  display: grid; gap: var(--s-10);
-  grid-template-columns: 1fr min(420px, 100%);
-  align-items: center; justify-items: center;
-  max-width: 1120px; width: 100%; margin: 0 auto;
-}
-.hero__copy { max-width: 460px; }
+.hero__copy { max-width: 560px; width: 100%; margin: 0 auto 0 6vw; }
 .hero__eyebrow {
   color: var(--c-primary); font-weight: var(--fw-semibold); font-size: var(--fs-sm);
   letter-spacing: 0.01em; margin-bottom: var(--s-3);
 }
-.hero__title { font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1.1; margin-bottom: var(--s-4); }
-.hero__lead { color: var(--c-muted); font-size: var(--fs-h3); margin-bottom: var(--s-5); }
+.hero__title { font-size: clamp(2.25rem, 5vw, 3.25rem); line-height: 1.08; margin-bottom: var(--s-4); letter-spacing: -0.02em; }
+.hero__lead { color: var(--c-muted); font-size: var(--fs-h3); margin-bottom: var(--s-6); max-width: 44ch; }
+.hero__cta { margin-bottom: var(--s-6); }
+.btn-lg { min-height: 52px; padding: 0 var(--s-6); font-size: var(--fs-body); border-radius: var(--r-md); }
+.btn-lg svg { font-size: 20px; }
 .hero__badges { display: flex; gap: var(--s-2); list-style: none; padding: 0; margin: 0 0 var(--s-5); }
 .hero__note { font-size: var(--fs-sm); color: var(--c-muted); }
-.hero__chat { width: 100%; display: flex; justify-content: center; }
 
 .public__footer {
   text-align: center; padding: var(--s-5); font-size: var(--fs-sm);
-  color: var(--c-muted); border-top: 1px solid var(--c-border); background: var(--c-surface);
+  color: var(--c-muted); border-top: 1px solid var(--c-border-soft); background: var(--c-surface);
 }
 
+/* ---- Floating chat dock (bottom-right) ---- */
+.chatdock { position: fixed; right: var(--s-6); bottom: var(--s-6); z-index: 50; }
+.chatdock__launcher {
+  width: 60px; height: 60px; border-radius: var(--r-full); border: none;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(180deg, #12857b 0%, var(--c-primary) 100%);
+  box-shadow: var(--e-primary), var(--e-lg);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+  position: relative; margin-left: auto;
+}
+.chatdock__launcher svg { font-size: 28px; }
+.chatdock__launcher:hover { transform: translateY(-2px) scale(1.03); }
+.chatdock__launcher.is-open { background: var(--c-primary-hover); }
+.chatdock__badge {
+  position: absolute; top: 4px; right: 4px; width: 12px; height: 12px;
+  background: var(--c-error); border: 2px solid #fff; border-radius: var(--r-full);
+}
+.chatdock__panel {
+  position: absolute; right: 0; bottom: calc(60px + var(--s-3));
+  transform-origin: bottom right;
+  opacity: 0; transform: translateY(12px) scale(0.97); pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.chatdock__panel.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.chatdock__panel .chat { box-shadow: var(--e-lg); }
+
 @media (max-width: 860px) {
-  .public__hero { padding: var(--s-8) var(--s-4); }
-  .public__hero::after {
-    background: rgba(248, 250, 252, 0.9); /* flat scrim when copy sits over image */
-  }
-  .hero__inner { grid-template-columns: 1fr; }
-  .hero__copy { text-align: center; max-width: 100%; min-width: 0; }
+  .public__hero { padding: var(--s-8) var(--s-5); }
+  .public__hero::after { background: rgba(248, 250, 252, 0.9); }
+  .hero__copy { margin: 0 auto; text-align: center; max-width: 100%; }
+  .hero__lead { margin-left: auto; margin-right: auto; }
   .hero__badges { justify-content: center; flex-wrap: wrap; }
-  .chat { max-width: 100%; }
+  .hero__cta { display: flex; justify-content: center; }
+
+  /* Chat becomes a near-full-screen sheet on phones. */
+  .chatdock { right: var(--s-4); bottom: var(--s-4); left: var(--s-4); }
+  .chatdock__panel {
+    right: 0; left: 0; bottom: calc(60px + var(--s-3));
+  }
+  .chatdock__panel .chat { width: 100%; max-width: 100%; height: min(560px, 72vh); }
+  .chatdock__launcher { margin-left: auto; }
 }

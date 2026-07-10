@@ -1,12 +1,15 @@
 import { admin } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
 import { navigate } from '../../../lib/router';
+import {
+  IconDoctors, IconSchedules, IconExceptions, IconAppointments, IconArrowRight,
+} from '../../../components/icons';
 
 const CARDS = [
-  { key: 'doctors', title: 'Doctors', desc: 'Add and review clinic doctors', icon: '👩‍⚕️' },
-  { key: 'schedules', title: 'Schedules', desc: 'Set weekly availability rules', icon: '🗓️' },
-  { key: 'exceptions', title: 'Exceptions', desc: 'Block days or windows off', icon: '🚫' },
-  { key: 'appointments', title: 'Appointments', desc: 'View bookings by doctor & date', icon: '📋' },
+  { key: 'doctors', title: 'Doctors', desc: 'Add and review clinic doctors', Icon: IconDoctors },
+  { key: 'schedules', title: 'Schedules', desc: 'Set weekly availability rules', Icon: IconSchedules },
+  { key: 'exceptions', title: 'Exceptions', desc: 'Block days or windows off', Icon: IconExceptions },
+  { key: 'appointments', title: 'Appointments', desc: 'View bookings by doctor & date', Icon: IconAppointments },
 ];
 
 export default function Dashboard({ token }) {
@@ -45,7 +48,7 @@ export default function Dashboard({ token }) {
           <div className="dash-panel__head">
             <h2>Doctors</h2>
             <button className="btn btn-ghost btn-sm" onClick={() => navigate('/admin/doctors')}>
-              Manage →
+              Manage <IconArrowRight aria-hidden="true" />
             </button>
           </div>
           <div className="card table-card">
@@ -77,7 +80,7 @@ export default function Dashboard({ token }) {
           <div className="nav-cards">
             {CARDS.map((c) => (
               <button key={c.key} className="card nav-card" onClick={() => navigate(`/admin/${c.key}`)}>
-                <span className="nav-card__icon" aria-hidden="true">{c.icon}</span>
+                <span className="nav-card__icon" aria-hidden="true"><c.Icon /></span>
                 <span className="nav-card__title">{c.title}</span>
                 <span className="nav-card__desc">{c.desc}</span>
               </button>

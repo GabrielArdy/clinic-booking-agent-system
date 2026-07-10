@@ -14,9 +14,13 @@ The entire patient booking journey is driven by **one stateful endpoint** (`POST
 
 ### Public booking
 
-Hero over a real clinic photo (scrim keeps copy AA-readable), with the live chat widget: greeting, progress stepper, specialty quick-replies, and a free-text composer.
+Landing hero over a real clinic photo (scrim keeps copy AA-readable) with a **floating chat launcher** bottom-right — the booking chat lives in a popover, not in the page.
 
-![Public landing with booking chat](docs/screenshots/01-landing.png)
+![Public landing with floating chat launcher](docs/screenshots/01-landing.png)
+
+Tap the launcher (or "Chat with us") to open the booking chat: greeting, progress stepper, specialty quick-replies, and a free-text composer. Minimize returns to the launcher; the conversation persists.
+
+![Landing with the booking chat open](docs/screenshots/06-landing-chat-open.png)
 
 ### Admin console
 
@@ -39,6 +43,7 @@ Hero over a real clinic photo (scrim keeps copy AA-readable), with the live chat
 ## Features
 
 ### Patient booking (public)
+- **Floating chat launcher** (bottom-right) opens the booking chat as a popover over the landing page; minimize keeps the conversation alive (mockup's Default/Unread/Minimized launcher states).
 - Full conversational flow: specialty → doctor → date → slot → name → phone → confirm → complete/cancelled.
 - **Progress stepper** derived from the server `stage` — no duplicated client state.
 - **Free-text input always available** beside the quick-reply chips (the API accepts either).

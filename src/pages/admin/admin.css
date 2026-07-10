@@ -5,7 +5,8 @@
   width: 100%; max-width: 380px; padding: var(--s-8); text-align: center;
   box-shadow: var(--e-lg);
 }
-.admin-login__mark { font-size: 34px; }
+.admin-login__mark { line-height: 0; }
+.admin-login__mark svg { font-size: 40px; color: var(--c-primary); }
 .admin-login__lead { color: var(--c-muted); font-size: var(--fs-sm); margin-bottom: var(--s-2); }
 
 /* ---- Shell ---- */
@@ -21,6 +22,8 @@
   color: #fff; font-weight: var(--fw-semibold); font-size: var(--fs-h3); padding: 0 var(--s-2);
 }
 .admin__brand:hover { text-decoration: none; }
+.admin__brand svg { font-size: 22px; color: #6ee7d8; }
+.admin__navitem svg { font-size: 19px; }
 .admin__nav { display: flex; flex-direction: column; gap: 4px; }
 .admin__side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 4px;
   padding-top: var(--s-4); border-top: 1px solid rgba(255, 255, 255, 0.1); }
@@ -125,7 +128,8 @@
   transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 .nav-card:hover { box-shadow: var(--e-md); border-color: var(--c-primary); transform: translateY(-2px); }
-.nav-card__icon { font-size: 22px; }
+.nav-card__icon { line-height: 0; }
+.nav-card__icon svg { font-size: 24px; color: var(--c-primary); }
 .nav-card__title { font-weight: var(--fw-semibold); }
 .nav-card__desc { font-size: var(--fs-xs); color: var(--c-muted); line-height: 1.35; }
 
