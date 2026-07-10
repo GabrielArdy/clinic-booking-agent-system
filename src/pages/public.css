@@ -1,0 +1,70 @@
+@import '../components/chat/chat.css';
+
+.public { min-height: 100%; display: flex; flex-direction: column; }
+
+.public__nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-4) var(--s-6); border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface);
+}
+.brand { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--c-text); }
+.brand:hover { text-decoration: none; }
+.brand__mark {
+  width: 32px; height: 32px; border-radius: var(--r-sm); display: grid; place-items: center;
+  background: var(--c-primary-soft);
+}
+.brand__name { font-weight: var(--fw-semibold); }
+
+.public__hero {
+  position: relative; isolation: isolate;
+  flex: 1; display: flex; align-items: center;
+  padding: var(--s-12) var(--s-6);
+}
+/* Clinic photo, full-bleed behind the hero. */
+.public__hero::before {
+  content: ''; position: absolute; inset: 0; z-index: -2;
+  background-image: var(--hero-img);
+  background-size: cover; background-position: center right;
+}
+/* White scrim — strongest on the left so dark copy stays AA-readable, fading
+   right where the (white) chat card sits. */
+.public__hero::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(
+    100deg,
+    rgba(248, 250, 252, 0.95) 0%,
+    rgba(248, 250, 252, 0.85) 40%,
+    rgba(248, 250, 252, 0.55) 100%
+  );
+}
+.hero__inner {
+  display: grid; gap: var(--s-10);
+  grid-template-columns: 1fr min(420px, 100%);
+  align-items: center; justify-items: center;
+  max-width: 1120px; width: 100%; margin: 0 auto;
+}
+.hero__copy { max-width: 460px; }
+.hero__eyebrow {
+  color: var(--c-primary); font-weight: var(--fw-semibold); font-size: var(--fs-sm);
+  letter-spacing: 0.01em; margin-bottom: var(--s-3);
+}
+.hero__title { font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1.1; margin-bottom: var(--s-4); }
+.hero__lead { color: var(--c-muted); font-size: var(--fs-h3); margin-bottom: var(--s-5); }
+.hero__badges { display: flex; gap: var(--s-2); list-style: none; padding: 0; margin: 0 0 var(--s-5); }
+.hero__note { font-size: var(--fs-sm); color: var(--c-muted); }
+.hero__chat { width: 100%; display: flex; justify-content: center; }
+
+.public__footer {
+  text-align: center; padding: var(--s-5); font-size: var(--fs-sm);
+  color: var(--c-muted); border-top: 1px solid var(--c-border); background: var(--c-surface);
+}
+
+@media (max-width: 860px) {
+  .public__hero { padding: var(--s-8) var(--s-4); }
+  .public__hero::after {
+    background: rgba(248, 250, 252, 0.9); /* flat scrim when copy sits over image */
+  }
+  .hero__inner { grid-template-columns: 1fr; }
+  .hero__copy { text-align: center; }
+  .hero__badges { justify-content: center; }
+}
