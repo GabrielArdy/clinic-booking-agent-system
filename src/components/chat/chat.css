@@ -96,6 +96,13 @@
   box-shadow: var(--e-primary); transform: translateY(-1px);
 }
 .chip:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+/* Unavailable option (full/closed slot): stays legible, reads as off, not tappable.
+   Wins over .chip:disabled via later source order at equal specificity. */
+.chip--off:disabled {
+  opacity: 1; color: var(--c-muted);
+  background: var(--c-subtle-2); border-color: var(--c-border);
+  box-shadow: none; text-decoration: line-through; text-decoration-color: var(--c-border);
+}
 
 /* Slot cards — bold time, availability sub-label, teal outline (brand Slot Card). */
 .chips--grid .chip {
@@ -107,6 +114,8 @@
   color: var(--c-success);
 }
 .chips--grid .chip:hover:not(:disabled)::after { color: rgba(255, 255, 255, 0.85); }
+/* Full/closed slot card: drop the "Available" sub-label (reason is in the label). */
+.chips--grid .chip--off::after { content: none; }
 
 /* Composer */
 .composer {
@@ -144,6 +153,8 @@
   border: 1px solid var(--c-border); border-radius: var(--r-md); background: var(--c-surface);
 }
 .confirm-card--done { border-color: var(--c-success); background: var(--c-success-soft); }
+.confirm-card--cancelled { border-color: var(--c-error); background: var(--c-error-soft); }
+.confirm-card--cancelled .confirm-card__icon svg { color: var(--c-error); }
 .confirm-card__head { display: flex; gap: var(--s-3); align-items: flex-start; margin-bottom: var(--s-3); }
 .confirm-card__icon { line-height: 0; }
 .confirm-card__icon svg { font-size: 24px; color: var(--c-primary); }

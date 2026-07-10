@@ -9,6 +9,7 @@ export default function Doctors({ token }) {
 
   const [fullName, setFullName] = useState('');
   const [specialtyId, setSpecialtyId] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
 
@@ -18,10 +19,11 @@ export default function Doctors({ token }) {
     try {
       const { doctor } = await admin.createDoctor(token, {
         fullName: fullName.trim(), specialtyId: Number(specialtyId),
+        photoUrl: photoUrl.trim() || null,
       });
       // Optimistic-ish: append the server's canonical record, no full refetch.
       setData((prev) => ({ doctors: [...(prev?.doctors ?? []), doctor] }));
-      setFullName(''); setSpecialtyId('');
+      setFullName(''); setSpecialtyId(''); setPhotoUrl('');
     } catch (err) {
       setFormError(err.message);
     } finally { setSaving(false); }
@@ -46,6 +48,11 @@ export default function Doctors({ token }) {
             <span>Specialty ID</span>
             <input type="number" min="1" value={specialtyId}
                    onChange={(e) => setSpecialtyId(e.target.value)} required placeholder="1" />
+          </label>
+          <label className="field">
+            <span>Photo URL <em className="opt">optional</em></span>
+            <input type="url" value={photoUrl} maxLength={500}
+                   onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://…/photo.jpg" />
           </label>
           <button className="btn btn-primary" type="submit"
                   disabled={saving || !fullName.trim() || !specialtyId}>

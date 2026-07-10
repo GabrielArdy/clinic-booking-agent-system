@@ -19,7 +19,20 @@ import {
   BiRightArrowAlt,
   BiMessageRoundedDots,
   BiX,
+  BiXCircle,
   BiMinus,
+  BiSupport,
+  BiCog,
+  BiPalette,
+  BiCategoryAlt,
+  BiGroup,
+  BiTimeFive,
+  BiCalendarEvent,
+  BiPhone,
+  BiTrash,
+  BiEditAlt,
+  BiPlus,
+  BiCalendarCheck,
 } from 'react-icons/bi';
 
 export const IconBrand = BiPlusMedical;       // clinic / stethoscope mark
@@ -42,3 +55,18 @@ export const IconArrowRight = BiRightArrowAlt;
 export const IconChat = BiMessageRoundedDots;  // floating launcher
 export const IconClose = BiX;
 export const IconMinimize = BiMinus;
+export const IconCancel = BiXCircle;           // cancelled appointment
+export const IconHandoff = BiSupport;          // agent handoff
+
+// CMS console
+export const IconSettings = BiCog;             // clinic settings
+export const IconTheme = BiPalette;            // theme / branding
+export const IconSpecialty = BiCategoryAlt;    // specialties
+export const IconStaff = BiGroup;              // staff (non-doctor)
+export const IconShift = BiTimeFive;           // slot presets / shifts
+export const IconRoster = BiCalendarEvent;     // shift assignments
+export const IconOnDuty = BiCalendarCheck;
+export const IconPhone = BiPhone;
+export const IconTrash = BiTrash;
+export const IconEdit = BiEditAlt;
+export const IconPlus = BiPlus;

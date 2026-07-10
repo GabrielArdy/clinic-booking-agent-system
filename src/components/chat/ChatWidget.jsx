@@ -6,15 +6,38 @@ import Composer from './Composer';
 import ConfirmationCard from './ConfirmationCard';
 import { IconBrand, IconWarning, IconMinimize } from '../icons';
 
+// Booking flow shows the stepper; purpose picker + check/cancel flow do not
+// (a lookup isn't a booking — a progress bar there would mislead).
+const BOOKING_STAGES = new Set([
+  'select_specialty', 'select_doctor', 'select_date', 'select_slot',
+  'collect_patient_name', 'collect_patient_phone', 'confirm_booking', 'booking_complete',
+]);
+// Terminal stages: any next message restarts at select_purpose.
+const TERMINAL_STAGES = new Set([
+  'booking_complete', 'cancellation_complete', 'cancelled', 'handoff_pending',
+]);
+// Which entity summary card (if any) to show for a stage.
+const CARD_MODE = {
+  confirm_booking: 'review',
+  booking_complete: 'done',
+  check_result: 'lookup',
+  confirm_cancellation: 'lookup',
+  cancellation_complete: 'cancelled',
+};
+
 export default function ChatWidget({ onClose }) {
   const { messages, turn, pending, error, ready, send, restart } = useChat();
 
   const stage = turn?.stage;
   const entities = turn?.collectedEntities;
-  const isConfirm = stage === 'confirm_booking';
-  const isComplete = stage === 'booking_complete';
-  const isCancelled = stage === 'cancelled';
-  const inFlow = !!stage && !isComplete && !isCancelled;
+  const isTerminal = TERMINAL_STAGES.has(stage);
+  const showStepper = BOOKING_STAGES.has(stage);
+  const cardMode = CARD_MODE[stage];
+  const cardStatus = cardMode === 'cancelled' ? 'Cancelled'
+    : (cardMode === 'lookup' ? 'Active' : undefined);
+
+  const endLabel = stage === 'booking_complete' ? 'Book another'
+    : stage === 'handoff_pending' ? 'Start over' : 'Start again';
 
   return (
     <section className="chat" aria-label="Book an appointment">
@@ -31,7 +54,7 @@ export default function ChatWidget({ onClose }) {
         )}
       </header>
 
-      {inFlow && <ProgressStepper stage={stage} />}
+      {showStepper && <ProgressStepper stage={stage} />}
 
       <MessageList messages={messages} pending={pending} />
 
@@ -52,11 +75,11 @@ export default function ChatWidget({ onClose }) {
         </div>
       )}
 
-      {(isConfirm || isComplete) && (
-        <ConfirmationCard entities={entities} complete={isComplete} />
+      {cardMode && (
+        <ConfirmationCard entities={entities} mode={cardMode} status={cardStatus} />
       )}
 
-      {inFlow && (
+      {!isTerminal && (
         <QuickReplies
           replies={turn?.quickReplies}
           stage={stage}
@@ -65,16 +88,14 @@ export default function ChatWidget({ onClose }) {
         />
       )}
 
-      {(isComplete || isCancelled) && (
+      {isTerminal && (
         <div className="chat__end">
-          <button className="btn btn-primary" onClick={restart}>
-            {isComplete ? 'Book another' : 'Start again'}
-          </button>
+          <button className="btn btn-primary" onClick={restart}>{endLabel}</button>
         </div>
       )}
 
       {/* Free text stays available through the whole flow (contract §3). */}
-      {!isComplete && !isCancelled && (
+      {!isTerminal && (
         <Composer disabled={pending || !ready} onSend={send} />
       )}
     </section>

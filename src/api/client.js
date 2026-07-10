@@ -9,7 +9,9 @@ export class ApiError extends Error {
     super(message);
     this.name = 'ApiError';
     this.status = status;
-    this.code = code; // NOT_FOUND | SLOT_TAKEN | INVALID_INPUT | PHONE_MISMATCH | ALREADY_CANCELLED | RATE_LIMIT
+    // NOT_FOUND | SLOT_TAKEN | INVALID_INPUT | PHONE_MISMATCH | ALREADY_CANCELLED
+    // | TOO_LATE_TO_BOOK | TOO_LATE_TO_CANCEL | RATE_LIMIT | NETWORK
+    this.code = code;
     this.details = details;
   }
 }
@@ -89,4 +91,73 @@ export const admin = {
     request('/api/admin/schedule-exceptions', { method: 'POST', headers: adminHeaders(token), body, signal }),
   listBookings: (token, { doctorId, date }, { signal } = {}) =>
     request(`/api/admin/bookings?doctorId=${doctorId}&date=${date}`, { headers: adminHeaders(token), signal }),
+};
+
+/* ---------------- CMS console ---------------- */
+// Content/config surface (contract V2 §CMS). Same x-admin-token, /api/cms tree.
+// Singletons are PUT-partial; the rest are REST CRUD.
+export const cms = {
+  // Clinic setting (singleton)
+  getClinic: (token, { signal } = {}) =>
+    request('/api/cms/clinic', { headers: adminHeaders(token), signal }),
+  updateClinic: (token, body, { signal } = {}) =>
+    request('/api/cms/clinic', { method: 'PUT', headers: adminHeaders(token), body, signal }),
+
+  // Theme (singleton)
+  getTheme: (token, { signal } = {}) =>
+    request('/api/cms/theme', { headers: adminHeaders(token), signal }),
+  updateTheme: (token, body, { signal } = {}) =>
+    request('/api/cms/theme', { method: 'PUT', headers: adminHeaders(token), body, signal }),
+
+  // Specialties
+  listSpecialties: (token, { signal } = {}) =>
+    request('/api/cms/specialties', { headers: adminHeaders(token), signal }),
+  createSpecialty: (token, body, { signal } = {}) =>
+    request('/api/cms/specialties', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  updateSpecialty: (token, id, body, { signal } = {}) =>
+    request(`/api/cms/specialties/${id}`, { method: 'PUT', headers: adminHeaders(token), body, signal }),
+  deleteSpecialty: (token, id, { signal } = {}) =>
+    request(`/api/cms/specialties/${id}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
+
+  // Doctors (rich: email/phone/bio/photo)
+  listDoctors: (token, { signal } = {}) =>
+    request('/api/cms/doctors', { headers: adminHeaders(token), signal }),
+
+  // Staff (non-doctor)
+  listStaff: (token, { signal } = {}) =>
+    request('/api/cms/staff', { headers: adminHeaders(token), signal }),
+  createStaff: (token, body, { signal } = {}) =>
+    request('/api/cms/staff', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  updateStaff: (token, id, body, { signal } = {}) =>
+    request(`/api/cms/staff/${id}`, { method: 'PUT', headers: adminHeaders(token), body, signal }),
+  deleteStaff: (token, id, { signal } = {}) =>
+    request(`/api/cms/staff/${id}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
+
+  // Slot presets
+  listSlotPresets: (token, { signal } = {}) =>
+    request('/api/cms/slot-presets', { headers: adminHeaders(token), signal }),
+  createSlotPreset: (token, body, { signal } = {}) =>
+    request('/api/cms/slot-presets', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  updateSlotPreset: (token, id, body, { signal } = {}) =>
+    request(`/api/cms/slot-presets/${id}`, { method: 'PUT', headers: adminHeaders(token), body, signal }),
+  deleteSlotPreset: (token, id, { signal } = {}) =>
+    request(`/api/cms/slot-presets/${id}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
+
+  // Shifts
+  listShifts: (token, { signal } = {}) =>
+    request('/api/cms/shifts', { headers: adminHeaders(token), signal }),
+  createShift: (token, body, { signal } = {}) =>
+    request('/api/cms/shifts', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  updateShift: (token, id, body, { signal } = {}) =>
+    request(`/api/cms/shifts/${id}`, { method: 'PUT', headers: adminHeaders(token), body, signal }),
+  deleteShift: (token, id, { signal } = {}) =>
+    request(`/api/cms/shifts/${id}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
+
+  // Shift assignments (on-duty roster)
+  listAssignments: (token, date, { signal } = {}) =>
+    request(`/api/cms/shift-assignments${date ? `?date=${date}` : ''}`, { headers: adminHeaders(token), signal }),
+  createAssignment: (token, body, { signal } = {}) =>
+    request('/api/cms/shift-assignments', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  deleteAssignment: (token, id, { signal } = {}) =>
+    request(`/api/cms/shift-assignments/${id}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
 };
