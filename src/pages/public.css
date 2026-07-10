@@ -4,21 +4,22 @@
 
 .public__nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: var(--s-4) var(--s-6); border-bottom: 1px solid var(--c-border);
-  background: var(--c-surface);
+  padding: var(--s-4) var(--s-6); background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(1.2) blur(8px); border-bottom: 1px solid var(--c-border-soft);
+  box-shadow: var(--e-sm); position: sticky; top: 0; z-index: 10;
 }
 .brand { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--c-text); }
 .brand:hover { text-decoration: none; }
 .brand__mark {
-  width: 32px; height: 32px; border-radius: var(--r-sm); display: grid; place-items: center;
-  background: var(--c-primary-soft);
+  width: 34px; height: 34px; border-radius: var(--r-md); display: grid; place-items: center;
+  background: linear-gradient(180deg, #12857b, var(--c-primary)); box-shadow: var(--e-primary);
 }
 .brand__name { font-weight: var(--fw-semibold); }
 
 .public__hero {
   position: relative; isolation: isolate;
   flex: 1; display: flex; align-items: center;
-  padding: var(--s-12) var(--s-6);
+  padding: var(--s-10) var(--s-6);
 }
 /* Clinic photo, full-bleed behind the hero. */
 .public__hero::before {

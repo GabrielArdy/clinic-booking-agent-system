@@ -10,7 +10,7 @@ body {
   font-size: var(--fs-body);
   line-height: var(--lh-body);
   color: var(--c-text);
-  background: var(--c-subtle);
+  background: var(--page-bg) fixed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -39,25 +39,48 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
   min-height: 44px; padding: 0 var(--s-5); border: 1px solid transparent;
   border-radius: var(--r-md); font-weight: var(--fw-semibold); font-size: var(--fs-sm);
-  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease,
+    border-color 120ms ease, color 120ms ease;
 }
-.btn-primary { background: var(--c-primary); color: #fff; }
-.btn-primary:hover { background: var(--c-primary-hover); }
-.btn-ghost { background: var(--c-surface); color: var(--c-text); border-color: var(--c-border); }
-.btn-ghost:hover { background: var(--c-subtle-2); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(180deg, #12857b 0%, var(--c-primary) 100%);
+  color: #fff; box-shadow: var(--e-primary);
+}
+.btn-primary:hover { background: var(--c-primary-hover); box-shadow: var(--e-primary), var(--e-md); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost { background: var(--c-surface); color: var(--c-text); border-color: var(--c-border); box-shadow: var(--e-sm); }
+.btn-ghost:hover { background: var(--c-subtle); border-color: #cbd5e1; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
 
 .card {
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: var(--r-lg); box-shadow: var(--e-sm);
+  background: var(--c-surface); border: 1px solid var(--c-border-soft);
+  border-radius: var(--r-lg); box-shadow: var(--e-md);
 }
+
+/* A tinted panel that holds white cards — the two-tone nesting from brand.png. */
+.panel-tint {
+  background: linear-gradient(180deg, #ffffff 0%, var(--c-panel) 100%);
+  border: 1px solid var(--c-border-soft);
+  border-radius: var(--r-xl);
+  box-shadow: var(--e-sm);
+}
+
+/* Inputs — soft, inset, rounded (brand Input Field). */
+.input, input[type="text"], input[type="password"], input[type="number"],
+input[type="date"], input[type="time"], select, textarea {
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: var(--r-md); box-shadow: var(--e-inset);
+  color: var(--c-text);
+}
+select { cursor: pointer; }
 
 .pill {
   display: inline-flex; align-items: center; gap: var(--s-1);
-  padding: 2px var(--s-2); border-radius: var(--r-full);
-  font-size: var(--fs-xs); font-weight: var(--fw-medium);
+  padding: 3px var(--s-3); border-radius: var(--r-full);
+  font-size: var(--fs-xs); font-weight: var(--fw-semibold);
+  box-shadow: var(--e-sm);
 }
 .pill-success { background: var(--c-success-soft); color: #166534; }
 .pill-warning { background: var(--c-warning-soft); color: #92400e; }
 .pill-error { background: var(--c-error-soft); color: #991b1b; }
-.pill-muted { background: var(--c-subtle-2); color: var(--c-muted); }
+.pill-muted { background: var(--c-subtle-2); color: var(--c-muted); box-shadow: none; }
