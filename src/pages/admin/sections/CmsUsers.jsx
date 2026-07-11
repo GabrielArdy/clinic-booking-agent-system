@@ -55,7 +55,7 @@ export default function CmsUsers({ token }) {
     } catch (err) { setError(err.message); }
   };
 
-  const posName = (code) => positions.find((p) => p.code === code)?.name ?? code;
+  const posName = (code) => positions.find((p) => p.positionCode === code)?.positionName ?? code;
   const canSubmit = form.fullName.trim() && form.email.trim() && form.password && form.positionCode && !busy;
 
   return (
@@ -92,7 +92,7 @@ export default function CmsUsers({ token }) {
             <select value={form.positionCode} onChange={set('positionCode')} required
                     disabled={posQ.loading || !!posQ.error}>
               <option value="">{posQ.loading ? 'Loading…' : 'Select a position…'}</option>
-              {positions.map((p) => <option key={p.code} value={p.code}>{p.name} ({p.code})</option>)}
+              {positions.map((p) => <option key={p.positionCode} value={p.positionCode}>{p.positionName} ({p.positionCode})</option>)}
             </select>
           </label>
           <label className="field">
@@ -114,9 +114,9 @@ export default function CmsUsers({ token }) {
           <div className="role-grid">
             {rolesQ.loading && <span className="muted">Loading roles…</span>}
             {roles.map((r) => (
-              <label key={r.code} className="role-chip">
-                <input type="checkbox" checked={form.roles.includes(r.code)} onChange={() => toggleRole(r.code)} />
-                <span>{r.name ?? r.code}</span>
+              <label key={r.roleCode} className="role-chip">
+                <input type="checkbox" checked={form.roles.includes(r.roleCode)} onChange={() => toggleRole(r.roleCode)} />
+                <span>{r.roleName ?? r.roleCode}</span>
               </label>
             ))}
           </div>
@@ -139,12 +139,12 @@ export default function CmsUsers({ token }) {
             <tbody>
               {users.length === 0 && <tr><td colSpan="6" className="muted">No users yet.</td></tr>}
               {users.map((u) => {
-                const inactive = u.status && u.status !== 'active';
+                const inactive = u.status === 'INACTIVE';
                 return (
                   <tr key={u.id}>
                     <td>{u.fullName}</td>
                     <td>{u.email}</td>
-                    <td>{posName(u.positionCode)}</td>
+                    <td>{u.positionName ?? posName(u.positionCode)}</td>
                     <td className="muted">{(u.roles ?? []).length} role(s)</td>
                     <td>
                       <span className={`pill ${inactive ? 'pill-muted' : 'pill-success'}`}>
@@ -154,7 +154,7 @@ export default function CmsUsers({ token }) {
                     <td>
                       <div className="row-actions">
                         <button className="btn btn-ghost btn-sm"
-                                onClick={() => setStatus(u, inactive ? 'active' : 'inactive')}>
+                                onClick={() => setStatus(u, inactive ? 'ACTIVE' : 'INACTIVE')}>
                           {inactive ? 'Activate' : 'Deactivate'}
                         </button>
                       </div>

@@ -3,10 +3,10 @@ import { cms } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
 import { IconTrash } from '../../../components/icons';
 
-const EMPTY = { code: '', name: '', groupCode: '' };
+const EMPTY = { positionCode: '', positionName: '', groupCode: '' };
 
-// Positions (master_position) keyed by string `code`. Belongs to a group. DELETE
-// is a soft deactivate, so the row stays and just flips inactive → refetch.
+// Positions (MasterPosition) = { id, positionCode, positionName, groupCode }.
+// No status flag; DELETE is a hard delete → drop the row on success.
 export default function CmsPositions({ token }) {
   const posQ = useAsync((signal) => cms.listPositions(token, { signal }), [token]);
   const groupsQ = useAsync((signal) => cms.listGroups(token, { signal }), [token]);
@@ -23,7 +23,9 @@ export default function CmsPositions({ token }) {
     setBusy(true); setError(null);
     try {
       await cms.createPosition(token, {
-        code: form.code.trim(), name: form.name.trim(), groupCode: form.groupCode,
+        positionCode: form.positionCode.trim(),
+        positionName: form.positionName.trim(),
+        groupCode: form.groupCode,
       });
       setForm(EMPTY); posQ.refetch();
     } catch (err) { setError(err.message); } finally { setBusy(false); }
@@ -34,8 +36,8 @@ export default function CmsPositions({ token }) {
     catch (err) { setError(err.message); }
   };
 
-  const groupName = (code) => groups.find((g) => g.code === code)?.name ?? code;
-  const canSubmit = form.code.trim() && form.name.trim() && form.groupCode && !busy;
+  const groupName = (code) => groups.find((g) => g.groupCode === code)?.groupName ?? code;
+  const canSubmit = form.positionCode.trim() && form.positionName.trim() && form.groupCode && !busy;
 
   return (
     <section className="section">
@@ -52,11 +54,11 @@ export default function CmsPositions({ token }) {
         <div className="form-row">
           <label className="field field--sm">
             <span>Code</span>
-            <input value={form.code} onChange={set('code')} maxLength={10} required placeholder="D012" />
+            <input value={form.positionCode} onChange={set('positionCode')} maxLength={50} required placeholder="D012" />
           </label>
           <label className="field">
             <span>Name</span>
-            <input value={form.name} onChange={set('name')} maxLength={100} required placeholder="Specialist Doctor" />
+            <input value={form.positionName} onChange={set('positionName')} maxLength={100} required placeholder="Specialist Doctor" />
           </label>
           <label className="field">
             <span>Group</span>
@@ -65,7 +67,7 @@ export default function CmsPositions({ token }) {
               <option value="">
                 {groupsQ.loading ? 'Loading…' : groupsQ.error ? 'Failed to load' : 'Select a group…'}
               </option>
-              {groups.map((g) => <option key={g.code} value={g.code}>{g.name} ({g.code})</option>)}
+              {groups.map((g) => <option key={g.groupCode} value={g.groupCode}>{g.groupName} ({g.groupCode})</option>)}
             </select>
           </label>
           <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
@@ -80,25 +82,18 @@ export default function CmsPositions({ token }) {
       {!posQ.loading && !posQ.error && (
         <div className="card table-card">
           <table className="table">
-            <thead><tr><th>Code</th><th>Name</th><th>Group</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Code</th><th>Name</th><th>Group</th><th></th></tr></thead>
             <tbody>
-              {positions.length === 0 && <tr><td colSpan="5" className="muted">No positions yet.</td></tr>}
+              {positions.length === 0 && <tr><td colSpan="4" className="muted">No positions yet.</td></tr>}
               {positions.map((p) => (
-                <tr key={p.code}>
-                  <td><code>{p.code}</code></td>
-                  <td>{p.name}</td>
+                <tr key={p.positionCode}>
+                  <td><code>{p.positionCode}</code></td>
+                  <td>{p.positionName}</td>
                   <td>{groupName(p.groupCode)}</td>
                   <td>
-                    <span className={`pill ${p.active === false ? 'pill-muted' : 'pill-success'}`}>
-                      {p.active === false ? 'Inactive' : 'Active'}
-                    </span>
-                  </td>
-                  <td>
                     <div className="row-actions">
-                      {p.active !== false && (
-                        <button className="icon-btn icon-btn--danger" aria-label={`Deactivate ${p.name}`}
-                                onClick={() => remove(p.code)}><IconTrash /></button>
-                      )}
+                      <button className="icon-btn icon-btn--danger" aria-label={`Delete ${p.positionName}`}
+                              onClick={() => remove(p.positionCode)}><IconTrash /></button>
                     </div>
                   </td>
                 </tr>
