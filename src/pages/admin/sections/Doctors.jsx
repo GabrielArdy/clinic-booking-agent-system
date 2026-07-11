@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { admin, cms } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
-import { IconEmail, IconPhone } from '../../../components/icons';
+import Modal from '../../../components/Modal';
+import { IconEmail, IconPhone, IconPlus } from '../../../components/icons';
 
 const EMPTY = { fullName: '', specialtyId: '', email: '', phone: '', photoUrl: '', bio: '' };
 
@@ -14,6 +15,7 @@ export default function Doctors({ token }) {
   const specQ = useAsync((signal) => admin.listSpecialties(token, { signal }), [token]);
   const specialties = specQ.data?.specialties ?? [];
 
+  const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
@@ -23,7 +25,6 @@ export default function Doctors({ token }) {
     e.preventDefault();
     setSaving(true); setFormError(null);
     try {
-      // CMS endpoint carries the rich fields (email/phone/bio); optionals → null.
       const { doctor } = await cms.createDoctor(token, {
         fullName: form.fullName.trim(),
         specialtyId: Number(form.specialtyId),
@@ -33,7 +34,7 @@ export default function Doctors({ token }) {
         bio: form.bio.trim() || null,
       });
       setData((prev) => ({ doctors: [...(prev?.doctors ?? []), doctor] }));
-      setForm(EMPTY);
+      setForm(EMPTY); setOpen(false);
     } catch (err) {
       setFormError(err.message);
     } finally { setSaving(false); }
@@ -46,67 +47,13 @@ export default function Doctors({ token }) {
       <div className="section__head">
         <div>
           <h1>Doctors</h1>
-          <p className="section__sub">Add practitioners and their contact details.</p>
+          <p className="section__sub">Practitioners and their contact details.</p>
         </div>
-        <button className="btn btn-ghost" onClick={refetch}>Refresh</button>
+        <div className="section__actions">
+          <button className="btn btn-ghost" onClick={refetch}>Refresh</button>
+          <button className="btn btn-primary" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add doctor</button>
+        </div>
       </div>
-
-      <form className="card panel" onSubmit={add}>
-        <h2>Add doctor</h2>
-
-        <div className="form-row">
-          <label className="field">
-            <span>Full name</span>
-            <input value={form.fullName} onChange={set('fullName')}
-                   minLength={2} maxLength={100} required placeholder="Dr. Aisha Karim" />
-          </label>
-          <label className="field">
-            <span>Specialty</span>
-            <select value={form.specialtyId} onChange={set('specialtyId')} required
-                    disabled={specQ.loading || !!specQ.error}>
-              <option value="">
-                {specQ.loading ? 'Loading specialties…'
-                  : specQ.error ? 'Failed to load specialties'
-                  : 'Select a specialty…'}
-              </option>
-              {specialties.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </label>
-        </div>
-
-        <div className="form-row">
-          <label className="field">
-            <span>Email <em className="opt">optional</em></span>
-            <input type="email" value={form.email} onChange={set('email')}
-                   maxLength={200} placeholder="aisha@citycare.clinic" />
-          </label>
-          <label className="field">
-            <span>Phone <em className="opt">optional</em></span>
-            <input type="tel" value={form.phone} onChange={set('phone')}
-                   maxLength={30} placeholder="6281234567890" />
-          </label>
-          <label className="field">
-            <span>Photo URL <em className="opt">optional</em></span>
-            <input type="url" value={form.photoUrl} onChange={set('photoUrl')}
-                   maxLength={500} placeholder="https://…/photo.jpg" />
-          </label>
-        </div>
-
-        <div className="form-row">
-          <label className="field">
-            <span>Bio <em className="opt">optional</em></span>
-            <textarea value={form.bio} onChange={set('bio')} rows={3} maxLength={1000}
-                      placeholder="Short professional summary shown to patients." />
-          </label>
-        </div>
-
-        <div className="save-row">
-          <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
-            {saving ? 'Adding…' : 'Add doctor'}
-          </button>
-          {formError && <p className="form-error" role="alert">{formError}</p>}
-        </div>
-      </form>
 
       {loading && <p className="muted">Loading doctors…</p>}
       {error && <p className="form-error" role="alert">{error.message}</p>}
@@ -118,7 +65,7 @@ export default function Doctors({ token }) {
             </thead>
             <tbody>
               {doctors.length === 0 && (
-                <tr><td colSpan="5" className="muted">No doctors yet.</td></tr>
+                <tr><td colSpan="5" className="muted">No doctors yet. Add your first practitioner.</td></tr>
               )}
               {doctors.map((d) => (
                 <tr key={d.id}>
@@ -141,6 +88,57 @@ export default function Doctors({ token }) {
           </table>
         </div>
       )}
+
+      <Modal open={open} onClose={() => setOpen(false)} size="lg" title="Add doctor">
+        <form onSubmit={add}>
+          <div className="form-grid">
+            <label className="field">
+              <span>Full name</span>
+              <input value={form.fullName} onChange={set('fullName')}
+                     minLength={2} maxLength={100} required autoFocus placeholder="Dr. Aisha Karim" />
+            </label>
+            <label className="field">
+              <span>Specialty</span>
+              <select value={form.specialtyId} onChange={set('specialtyId')} required
+                      disabled={specQ.loading || !!specQ.error}>
+                <option value="">
+                  {specQ.loading ? 'Loading specialties…'
+                    : specQ.error ? 'Failed to load specialties'
+                    : 'Select a specialty…'}
+                </option>
+                {specialties.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              <span>Email <em className="opt">optional</em></span>
+              <input type="email" value={form.email} onChange={set('email')}
+                     maxLength={200} placeholder="aisha@citycare.clinic" />
+            </label>
+            <label className="field">
+              <span>Phone <em className="opt">optional</em></span>
+              <input type="tel" value={form.phone} onChange={set('phone')}
+                     maxLength={30} placeholder="6281234567890" />
+            </label>
+            <label className="field">
+              <span>Photo URL <em className="opt">optional</em></span>
+              <input type="url" value={form.photoUrl} onChange={set('photoUrl')}
+                     maxLength={500} placeholder="https://…/photo.jpg" />
+            </label>
+            <label className="field field--full">
+              <span>Bio <em className="opt">optional</em></span>
+              <textarea value={form.bio} onChange={set('bio')} rows={3} maxLength={1000}
+                        placeholder="Short professional summary shown to patients." />
+            </label>
+          </div>
+          {formError && <p className="form-error" role="alert">{formError}</p>}
+          <div className="modal__foot">
+            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+            <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
+              {saving ? 'Adding…' : 'Add doctor'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </section>
   );
 }

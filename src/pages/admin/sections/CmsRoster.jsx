@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { cms, admin } from '../../../api/client';
 import { useCrud } from '../../../hooks/useCrud';
 import { useAsync } from '../../../hooks/useAsync';
-import { IconTrash } from '../../../components/icons';
+import Modal from '../../../components/Modal';
+import { IconTrash, IconPlus } from '../../../components/icons';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -28,6 +29,7 @@ export default function CmsRoster({ token }) {
   const doctorList = doctors.data ?? [];
   const staffList = staff.data ?? [];
 
+  const [open, setOpen] = useState(false);
   const [shiftId, setShiftId] = useState('');
   const [person, setPerson] = useState(''); // "doctor:3" | "staff:5"
 
@@ -43,7 +45,7 @@ export default function CmsRoster({ token }) {
     const [kind, id] = person.split(':');
     const who = kind === 'doctor' ? { doctorId: Number(id) } : { staffId: Number(id) };
     const ok = await add({ shiftId: Number(shiftId), date, ...who });
-    if (ok) { setShiftId(''); setPerson(''); }
+    if (ok) { setShiftId(''); setPerson(''); setOpen(false); }
   };
 
   return (
@@ -53,7 +55,10 @@ export default function CmsRoster({ token }) {
           <h1>Roster</h1>
           <p className="section__sub">Who is on duty, by shift and day.</p>
         </div>
-        <button className="btn btn-ghost" onClick={refetch}>Refresh</button>
+        <div className="section__actions">
+          <button className="btn btn-ghost" onClick={refetch}>Refresh</button>
+          <button className="btn btn-primary" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Assign</button>
+        </div>
       </div>
 
       <div className="filters">
@@ -63,62 +68,68 @@ export default function CmsRoster({ token }) {
         </label>
       </div>
 
-      <form className="card panel" onSubmit={submit}>
-        <h2>Assign to shift</h2>
-        <div className="form-row">
-          <label className="field field--sm">
-            <span>Shift</span>
-            <select value={shiftId} onChange={(e) => setShiftId(e.target.value)} required>
-              <option value="" disabled>Choose…</option>
-              {shiftList.map((s) => (
-                <option key={s.id} value={s.id}>{s.name} ({s.startTime}–{s.endTime})</option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>Person</span>
-            <select value={person} onChange={(e) => setPerson(e.target.value)} required>
-              <option value="" disabled>Choose…</option>
-              {doctorList.length > 0 && (
-                <optgroup label="Doctors">
-                  {doctorList.map((d) => <option key={`d${d.id}`} value={`doctor:${d.id}`}>{d.fullName}</option>)}
-                </optgroup>
-              )}
-              {staffList.length > 0 && (
-                <optgroup label="Staff">
-                  {staffList.map((s) => <option key={`s${s.id}`} value={`staff:${s.id}`}>{s.fullName}</option>)}
-                </optgroup>
-              )}
-            </select>
-          </label>
-          <button className="btn btn-primary" type="submit" disabled={busy || !shiftId || !person}>
-            {busy ? 'Assigning…' : 'Assign'}
-          </button>
-        </div>
-        {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
-      </form>
-
       {loading && <p className="muted">Loading roster…</p>}
       {error && <p className="form-error" role="alert">{error.message}</p>}
       {!loading && !error && (
-        <table className="table">
-          <thead><tr><th>Shift</th><th>Person</th><th>Type</th><th aria-label="Actions"></th></tr></thead>
-          <tbody>
-            {items.length === 0 && <tr><td colSpan="4" className="muted">Nobody assigned on {date}.</td></tr>}
-            {items.map((a) => (
-              <tr key={a.id}>
-                <td>{shiftName(a.shiftId)}</td>
-                <td>{nameOf(a)}</td>
-                <td><span className="pill pill-muted">{a.doctorId != null ? 'Doctor' : 'Staff'}</span></td>
-                <td className="row-actions">
-                  <button className="icon-btn icon-btn--danger" onClick={() => del(a.id)}
-                          aria-label="Remove assignment"><IconTrash /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="card table-card">
+          <table className="table">
+            <thead><tr><th>Shift</th><th>Person</th><th>Type</th><th aria-label="Actions"></th></tr></thead>
+            <tbody>
+              {items.length === 0 && <tr><td colSpan="4" className="muted">Nobody assigned on {date}.</td></tr>}
+              {items.map((a) => (
+                <tr key={a.id}>
+                  <td>{shiftName(a.shiftId)}</td>
+                  <td>{nameOf(a)}</td>
+                  <td><span className="pill pill-muted">{a.doctorId != null ? 'Doctor' : 'Staff'}</span></td>
+                  <td className="row-actions">
+                    <button className="icon-btn icon-btn--danger" onClick={() => del(a.id)}
+                            aria-label="Remove assignment"><IconTrash /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      <Modal open={open} onClose={() => setOpen(false)} title={`Assign to shift — ${date}`}>
+        <form onSubmit={submit}>
+          <div className="form-grid">
+            <label className="field">
+              <span>Shift</span>
+              <select value={shiftId} onChange={(e) => setShiftId(e.target.value)} required>
+                <option value="" disabled>Choose…</option>
+                {shiftList.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.startTime}–{s.endTime})</option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>Person</span>
+              <select value={person} onChange={(e) => setPerson(e.target.value)} required>
+                <option value="" disabled>Choose…</option>
+                {doctorList.length > 0 && (
+                  <optgroup label="Doctors">
+                    {doctorList.map((d) => <option key={`d${d.id}`} value={`doctor:${d.id}`}>{d.fullName}</option>)}
+                  </optgroup>
+                )}
+                {staffList.length > 0 && (
+                  <optgroup label="Staff">
+                    {staffList.map((s) => <option key={`s${s.id}`} value={`staff:${s.id}`}>{s.fullName}</option>)}
+                  </optgroup>
+                )}
+              </select>
+            </label>
+          </div>
+          {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
+          <div className="modal__foot">
+            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={busy || !shiftId || !person}>
+              {busy ? 'Assigning…' : 'Assign'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </section>
   );
 }

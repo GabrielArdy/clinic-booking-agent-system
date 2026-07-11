@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { cms } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
-import { IconTrash } from '../../../components/icons';
+import Modal from '../../../components/Modal';
+import { IconTrash, IconPlus } from '../../../components/icons';
 
 const EMPTY = { positionCode: '', positionName: '', groupCode: '' };
 
@@ -13,6 +14,7 @@ export default function CmsPositions({ token }) {
   const positions = posQ.data?.positions ?? [];
   const groups = groupsQ.data?.groups ?? [];
 
+  const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -27,7 +29,7 @@ export default function CmsPositions({ token }) {
         positionName: form.positionName.trim(),
         groupCode: form.groupCode,
       });
-      setForm(EMPTY); posQ.refetch();
+      setForm(EMPTY); setOpen(false); posQ.refetch();
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
@@ -46,43 +48,19 @@ export default function CmsPositions({ token }) {
           <h1>Positions</h1>
           <p className="section__sub">Job positions users are assigned to.</p>
         </div>
-        <button className="btn btn-ghost" onClick={posQ.refetch}>Refresh</button>
+        <div className="section__actions">
+          <button className="btn btn-ghost" onClick={posQ.refetch}>Refresh</button>
+          <button className="btn btn-primary" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add position</button>
+        </div>
       </div>
 
-      <form className="card panel" onSubmit={create}>
-        <h2>Add position</h2>
-        <div className="form-row">
-          <label className="field field--sm">
-            <span>Code</span>
-            <input value={form.positionCode} onChange={set('positionCode')} maxLength={50} required placeholder="D012" />
-          </label>
-          <label className="field">
-            <span>Name</span>
-            <input value={form.positionName} onChange={set('positionName')} maxLength={100} required placeholder="Specialist Doctor" />
-          </label>
-          <label className="field">
-            <span>Group</span>
-            <select value={form.groupCode} onChange={set('groupCode')} required
-                    disabled={groupsQ.loading || !!groupsQ.error}>
-              <option value="">
-                {groupsQ.loading ? 'Loading…' : groupsQ.error ? 'Failed to load' : 'Select a group…'}
-              </option>
-              {groups.map((g) => <option key={g.groupCode} value={g.groupCode}>{g.groupName} ({g.groupCode})</option>)}
-            </select>
-          </label>
-          <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
-            {busy ? 'Adding…' : 'Add position'}
-          </button>
-        </div>
-        {error && <p className="form-error" role="alert">{error}</p>}
-      </form>
-
+      {error && !open && <p className="form-error" role="alert">{error}</p>}
       {posQ.loading && <p className="muted">Loading…</p>}
       {posQ.error && <p className="form-error" role="alert">{posQ.error.message}</p>}
       {!posQ.loading && !posQ.error && (
         <div className="card table-card">
           <table className="table">
-            <thead><tr><th>Code</th><th>Name</th><th>Group</th><th></th></tr></thead>
+            <thead><tr><th>Code</th><th>Name</th><th>Group</th><th aria-label="Actions"></th></tr></thead>
             <tbody>
               {positions.length === 0 && <tr><td colSpan="4" className="muted">No positions yet.</td></tr>}
               {positions.map((p) => (
@@ -90,11 +68,9 @@ export default function CmsPositions({ token }) {
                   <td><code>{p.positionCode}</code></td>
                   <td>{p.positionName}</td>
                   <td>{groupName(p.groupCode)}</td>
-                  <td>
-                    <div className="row-actions">
-                      <button className="icon-btn icon-btn--danger" aria-label={`Delete ${p.positionName}`}
-                              onClick={() => remove(p.positionCode)}><IconTrash /></button>
-                    </div>
+                  <td className="row-actions">
+                    <button className="icon-btn icon-btn--danger" aria-label={`Delete ${p.positionName}`}
+                            onClick={() => remove(p.positionCode)}><IconTrash /></button>
                   </td>
                 </tr>
               ))}
@@ -102,6 +78,38 @@ export default function CmsPositions({ token }) {
           </table>
         </div>
       )}
+
+      <Modal open={open} onClose={() => setOpen(false)} title="Add position">
+        <form onSubmit={create}>
+          <div className="form-grid">
+            <label className="field">
+              <span>Code</span>
+              <input value={form.positionCode} onChange={set('positionCode')} maxLength={50} required autoFocus placeholder="D012" />
+            </label>
+            <label className="field">
+              <span>Name</span>
+              <input value={form.positionName} onChange={set('positionName')} maxLength={100} required placeholder="Specialist Doctor" />
+            </label>
+            <label className="field field--full">
+              <span>Group</span>
+              <select value={form.groupCode} onChange={set('groupCode')} required
+                      disabled={groupsQ.loading || !!groupsQ.error}>
+                <option value="">
+                  {groupsQ.loading ? 'Loading…' : groupsQ.error ? 'Failed to load' : 'Select a group…'}
+                </option>
+                {groups.map((g) => <option key={g.groupCode} value={g.groupCode}>{g.groupName} ({g.groupCode})</option>)}
+              </select>
+            </label>
+          </div>
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <div className="modal__foot">
+            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
+              {busy ? 'Adding…' : 'Add position'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </section>
   );
 }

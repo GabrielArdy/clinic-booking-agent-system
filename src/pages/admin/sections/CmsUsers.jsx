@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { admin, cms } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
+import Modal from '../../../components/Modal';
+import { IconPlus } from '../../../components/icons';
 
 const EMPTY = { fullName: '', email: '', password: '', positionCode: '', link: '', roles: [] };
 
@@ -20,6 +22,7 @@ export default function CmsUsers({ token }) {
   const doctors = doctorsQ.data?.doctors ?? [];
   const staff = staffQ.data?.staff ?? [];
 
+  const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -44,7 +47,7 @@ export default function CmsUsers({ token }) {
       };
       if (form.roles.length) body.roles = form.roles;      // else server uses the group default
       await cms.createUser(token, body);
-      setForm(EMPTY); usersQ.refetch();
+      setForm(EMPTY); setOpen(false); usersQ.refetch();
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
@@ -65,71 +68,13 @@ export default function CmsUsers({ token }) {
           <h1>User accounts</h1>
           <p className="section__sub">Login accounts, positions, and data links.</p>
         </div>
-        <button className="btn btn-ghost" onClick={usersQ.refetch}>Refresh</button>
+        <div className="section__actions">
+          <button className="btn btn-ghost" onClick={usersQ.refetch}>Refresh</button>
+          <button className="btn btn-primary" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add user</button>
+        </div>
       </div>
 
-      <form className="card panel" onSubmit={create}>
-        <h2>Add user</h2>
-        <div className="form-row">
-          <label className="field">
-            <span>Full name</span>
-            <input value={form.fullName} onChange={set('fullName')} maxLength={100} required placeholder="Dr. Amanda Putri" />
-          </label>
-          <label className="field">
-            <span>Email</span>
-            <input type="email" value={form.email} onChange={set('email')} maxLength={200} required placeholder="amanda@clinic.test" />
-          </label>
-          <label className="field">
-            <span>Password</span>
-            <input type="password" value={form.password} onChange={set('password')} minLength={8} required
-                   autoComplete="new-password" placeholder="Initial password" />
-          </label>
-        </div>
-
-        <div className="form-row">
-          <label className="field">
-            <span>Position</span>
-            <select value={form.positionCode} onChange={set('positionCode')} required
-                    disabled={posQ.loading || !!posQ.error}>
-              <option value="">{posQ.loading ? 'Loading…' : 'Select a position…'}</option>
-              {positions.map((p) => <option key={p.positionCode} value={p.positionCode}>{p.positionName} ({p.positionCode})</option>)}
-            </select>
-          </label>
-          <label className="field">
-            <span>Link to <em className="opt">optional</em></span>
-            <select value={form.link} onChange={set('link')}>
-              <option value="">No data link</option>
-              <optgroup label="Doctor">
-                {doctors.map((d) => <option key={`d${d.id}`} value={`doctor:${d.id}`}>{d.fullName}</option>)}
-              </optgroup>
-              <optgroup label="Staff">
-                {staff.map((s) => <option key={`s${s.id}`} value={`staff:${s.id}`}>{s.fullName}</option>)}
-              </optgroup>
-            </select>
-          </label>
-        </div>
-
-        <div className="field">
-          <span>Roles <em className="opt">optional — blank uses the position’s defaults</em></span>
-          <div className="role-grid">
-            {rolesQ.loading && <span className="muted">Loading roles…</span>}
-            {roles.map((r) => (
-              <label key={r.roleCode} className="role-chip">
-                <input type="checkbox" checked={form.roles.includes(r.roleCode)} onChange={() => toggleRole(r.roleCode)} />
-                <span>{r.roleName ?? r.roleCode}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="save-row">
-          <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
-            {busy ? 'Creating…' : 'Create user'}
-          </button>
-          {error && <p className="form-error" role="alert">{error}</p>}
-        </div>
-      </form>
-
+      {error && !open && <p className="form-error" role="alert">{error}</p>}
       {usersQ.loading && <p className="muted">Loading users…</p>}
       {usersQ.error && <p className="form-error" role="alert">{usersQ.error.message}</p>}
       {!usersQ.loading && !usersQ.error && (
@@ -151,13 +96,11 @@ export default function CmsUsers({ token }) {
                         {inactive ? 'Inactive' : 'Active'}
                       </span>
                     </td>
-                    <td>
-                      <div className="row-actions">
-                        <button className="btn btn-ghost btn-sm"
-                                onClick={() => setStatus(u, inactive ? 'ACTIVE' : 'INACTIVE')}>
-                          {inactive ? 'Activate' : 'Deactivate'}
-                        </button>
-                      </div>
+                    <td className="row-actions">
+                      <button className="btn btn-ghost btn-sm"
+                              onClick={() => setStatus(u, inactive ? 'ACTIVE' : 'INACTIVE')}>
+                        {inactive ? 'Activate' : 'Deactivate'}
+                      </button>
                     </td>
                   </tr>
                 );
@@ -166,6 +109,67 @@ export default function CmsUsers({ token }) {
           </table>
         </div>
       )}
+
+      <Modal open={open} onClose={() => setOpen(false)} size="lg" title="Add user">
+        <form onSubmit={create}>
+          <div className="form-grid">
+            <label className="field">
+              <span>Full name</span>
+              <input value={form.fullName} onChange={set('fullName')} maxLength={100} required autoFocus placeholder="Dr. Amanda Putri" />
+            </label>
+            <label className="field">
+              <span>Email</span>
+              <input type="email" value={form.email} onChange={set('email')} maxLength={200} required placeholder="amanda@clinic.test" />
+            </label>
+            <label className="field">
+              <span>Password</span>
+              <input type="password" value={form.password} onChange={set('password')} minLength={8} required
+                     autoComplete="new-password" placeholder="Initial password" />
+            </label>
+            <label className="field">
+              <span>Position</span>
+              <select value={form.positionCode} onChange={set('positionCode')} required
+                      disabled={posQ.loading || !!posQ.error}>
+                <option value="">{posQ.loading ? 'Loading…' : 'Select a position…'}</option>
+                {positions.map((p) => <option key={p.positionCode} value={p.positionCode}>{p.positionName} ({p.positionCode})</option>)}
+              </select>
+            </label>
+            <label className="field field--full">
+              <span>Link to <em className="opt">optional</em></span>
+              <select value={form.link} onChange={set('link')}>
+                <option value="">No data link</option>
+                <optgroup label="Doctor">
+                  {doctors.map((d) => <option key={`d${d.id}`} value={`doctor:${d.id}`}>{d.fullName}</option>)}
+                </optgroup>
+                <optgroup label="Staff">
+                  {staff.map((s) => <option key={`s${s.id}`} value={`staff:${s.id}`}>{s.fullName}</option>)}
+                </optgroup>
+              </select>
+            </label>
+          </div>
+
+          <div className="field field--full">
+            <span>Roles <em className="opt">optional — blank uses the position’s defaults</em></span>
+            <div className="role-grid">
+              {rolesQ.loading && <span className="muted">Loading roles…</span>}
+              {roles.map((r) => (
+                <label key={r.roleCode} className="role-chip">
+                  <input type="checkbox" checked={form.roles.includes(r.roleCode)} onChange={() => toggleRole(r.roleCode)} />
+                  <span>{r.roleName ?? r.roleCode}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <div className="modal__foot">
+            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
+              {busy ? 'Creating…' : 'Create user'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </section>
   );
 }

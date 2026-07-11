@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { cms } from '../../../api/client';
 import { useCrud } from '../../../hooks/useCrud';
-import { IconTrash } from '../../../components/icons';
+import Modal from '../../../components/Modal';
+import { IconTrash, IconPlus } from '../../../components/icons';
 
 // Slot presets (reusable consultation lengths) + shift templates. Both are hard
 // deletes per the contract, so the trash button removes the row outright.
@@ -28,39 +29,27 @@ function SlotPresets({ token }) {
     deps: [token],
   });
 
+  const [open, setOpen] = useState(false);
   const [label, setLabel] = useState('');
   const [minutes, setMinutes] = useState('');
 
   const submit = async (e) => {
     e.preventDefault();
     const ok = await add({ label: label.trim(), minutes: Number(minutes) });
-    if (ok) { setLabel(''); setMinutes(''); }
+    if (ok) { setLabel(''); setMinutes(''); setOpen(false); }
   };
 
   return (
-    <form className="card panel" onSubmit={submit}>
-      <h2>Slot presets</h2>
-      <div className="form-row">
-        <label className="field">
-          <span>Label</span>
-          <input value={label} onChange={(e) => setLabel(e.target.value)}
-                 maxLength={60} required placeholder="Standard consult" />
-        </label>
-        <label className="field field--sm">
-          <span>Minutes</span>
-          <input type="number" min="5" max="240" value={minutes}
-                 onChange={(e) => setMinutes(e.target.value)} required placeholder="30" />
-        </label>
-        <button className="btn btn-primary" type="submit" disabled={busy || !label.trim() || !minutes}>
-          {busy ? 'Saving…' : 'Add preset'}
-        </button>
+    <div className="card panel">
+      <div className="panel-head">
+        <h2>Slot presets</h2>
+        <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add preset</button>
       </div>
-      {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
 
       {loading && <p className="muted">Loading presets…</p>}
       {error && <p className="form-error" role="alert">{error.message}</p>}
       {!loading && !error && (
-        <table className="table" style={{ marginTop: 'var(--s-4)' }}>
+        <table className="table">
           <thead><tr><th>ID</th><th>Label</th><th>Minutes</th><th aria-label="Actions"></th></tr></thead>
           <tbody>
             {items.length === 0 && <tr><td colSpan="4" className="muted">No presets yet.</td></tr>}
@@ -78,7 +67,31 @@ function SlotPresets({ token }) {
           </tbody>
         </table>
       )}
-    </form>
+
+      <Modal open={open} onClose={() => setOpen(false)} title="Add slot preset">
+        <form onSubmit={submit}>
+          <div className="form-grid">
+            <label className="field">
+              <span>Label</span>
+              <input value={label} onChange={(e) => setLabel(e.target.value)}
+                     maxLength={60} required autoFocus placeholder="Standard consult" />
+            </label>
+            <label className="field">
+              <span>Minutes</span>
+              <input type="number" min="5" max="240" value={minutes}
+                     onChange={(e) => setMinutes(e.target.value)} required placeholder="30" />
+            </label>
+          </div>
+          {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
+          <div className="modal__foot">
+            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={busy || !label.trim() || !minutes}>
+              {busy ? 'Saving…' : 'Add preset'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
   );
 }
 
@@ -90,6 +103,7 @@ function Shifts({ token }) {
     deps: [token],
   });
 
+  const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -97,36 +111,20 @@ function Shifts({ token }) {
   const submit = async (e) => {
     e.preventDefault();
     const ok = await add({ name: name.trim(), startTime, endTime });
-    if (ok) { setName(''); setStartTime(''); setEndTime(''); }
+    if (ok) { setName(''); setStartTime(''); setEndTime(''); setOpen(false); }
   };
 
   return (
-    <form className="card panel" onSubmit={submit}>
-      <h2>Shift templates</h2>
-      <div className="form-row">
-        <label className="field">
-          <span>Name</span>
-          <input value={name} onChange={(e) => setName(e.target.value)}
-                 maxLength={60} required placeholder="Morning" />
-        </label>
-        <label className="field field--sm">
-          <span>Start</span>
-          <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
-        </label>
-        <label className="field field--sm">
-          <span>End</span>
-          <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
-        </label>
-        <button className="btn btn-primary" type="submit" disabled={busy || !name.trim() || !startTime || !endTime}>
-          {busy ? 'Saving…' : 'Add shift'}
-        </button>
+    <div className="card panel">
+      <div className="panel-head">
+        <h2>Shift templates</h2>
+        <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add shift</button>
       </div>
-      {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
 
       {loading && <p className="muted">Loading shifts…</p>}
       {error && <p className="form-error" role="alert">{error.message}</p>}
       {!loading && !error && (
-        <table className="table" style={{ marginTop: 'var(--s-4)' }}>
+        <table className="table">
           <thead><tr><th>ID</th><th>Name</th><th>Window</th><th aria-label="Actions"></th></tr></thead>
           <tbody>
             {items.length === 0 && <tr><td colSpan="4" className="muted">No shifts yet.</td></tr>}
@@ -144,6 +142,33 @@ function Shifts({ token }) {
           </tbody>
         </table>
       )}
-    </form>
+
+      <Modal open={open} onClose={() => setOpen(false)} title="Add shift template">
+        <form onSubmit={submit}>
+          <div className="form-grid">
+            <label className="field">
+              <span>Name</span>
+              <input value={name} onChange={(e) => setName(e.target.value)}
+                     maxLength={60} required autoFocus placeholder="Morning" />
+            </label>
+            <label className="field">
+              <span>Start</span>
+              <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
+            </label>
+            <label className="field">
+              <span>End</span>
+              <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
+            </label>
+          </div>
+          {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
+          <div className="modal__foot">
+            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={busy || !name.trim() || !startTime || !endTime}>
+              {busy ? 'Saving…' : 'Add shift'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
   );
 }
