@@ -134,9 +134,9 @@ function ThemePanel({ token }) {
   return (
     <form className="card panel" onSubmit={save}>
       <h2>Theme</h2>
-      <div className="form-row">
+      <div className="settings-grid">
         {COLORS.map(([k, label]) => (
-          <label className="field field--sm swatch-field" key={k}>
+          <label className="field swatch-field" key={k}>
             <span>{label}</span>
             <span className="swatch">
               <input type="color" value={form[k]} onChange={(e) => set(k, e.target.value)} aria-label={`${label} colour`} />
@@ -144,7 +144,7 @@ function ThemePanel({ token }) {
             </span>
           </label>
         ))}
-        <label className="field field--sm">
+        <label className="field">
           <span>Font family</span>
           <input value={form.fontFamily} onChange={(e) => set('fontFamily', e.target.value)} placeholder="Inter" />
         </label>
@@ -152,7 +152,7 @@ function ThemePanel({ token }) {
           <span>Logo URL <em className="opt">optional</em></span>
           <input type="url" value={form.logoUrl} onChange={(e) => set('logoUrl', e.target.value)} placeholder="https://…/logo.svg" />
         </label>
-        <label className="field field--check">
+        <label className="field field--check swatch-field">
           <input type="checkbox" checked={form.darkMode} onChange={(e) => set('darkMode', e.target.checked)} />
           <span>Dark mode</span>
         </label>

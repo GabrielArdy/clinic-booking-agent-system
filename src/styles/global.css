@@ -69,14 +69,28 @@ svg { display: inline-block; vertical-align: middle; flex: none; }
   box-shadow: var(--e-sm);
 }
 
-/* Inputs — soft, inset, rounded (brand Input Field). */
-.input, input[type="text"], input[type="password"], input[type="number"],
-input[type="date"], input[type="time"], select, textarea {
+/* Inputs — soft, inset, rounded (brand Input Field). One contract for EVERY
+   text-like control (email/url/tel included — they used to fall through to the
+   flat browser default, which read as inconsistent). */
+.input,
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
+select, textarea {
   background: var(--c-surface); border: 1px solid var(--c-border);
   border-radius: var(--r-md); box-shadow: var(--e-inset);
-  color: var(--c-text);
+  color: var(--c-text); min-height: 44px; padding: 0 var(--s-3);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
+textarea { padding: var(--s-3); min-height: 88px; line-height: var(--lh-body); resize: vertical; }
 select { cursor: pointer; }
+.input:hover,
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]):hover,
+select:hover, textarea:hover { border-color: #cbd5e1; }
+.input:focus-visible,
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]):focus-visible,
+select:focus-visible, textarea:focus-visible {
+  border-color: var(--c-accent); box-shadow: var(--focus-ring);
+}
+::placeholder { color: var(--c-muted); opacity: 0.75; }
 
 .pill {
   display: inline-flex; align-items: center; gap: var(--s-1);
