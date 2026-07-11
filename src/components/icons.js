@@ -36,6 +36,9 @@ import {
   BiChevronLeft,
   BiChevronRight,
   BiEnvelope,
+  BiHistory,
+  BiIdCard,
+  BiUserPin,
 } from 'react-icons/bi';
 
 export const IconBrand = BiPlusMedical;       // clinic / stethoscope mark
@@ -76,3 +79,8 @@ export const IconEdit = BiEditAlt;
 export const IconPlus = BiPlus;
 export const IconPrev = BiChevronLeft;   // calendar month nav
 export const IconNext = BiChevronRight;
+
+// V4 auth / RBAC
+export const IconAudit = BiHistory;      // audit log
+export const IconPosition = BiIdCard;    // positions
+export const IconUsers = BiUserPin;      // user accounts

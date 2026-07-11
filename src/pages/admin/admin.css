@@ -33,6 +33,8 @@
 }
 .admin__side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 4px;
   padding-top: var(--s-4); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.admin__who { font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: #e2f4f1;
+  padding: 0 var(--s-3) var(--s-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin__navitem {
   display: flex; align-items: center; gap: var(--s-3);
   padding: var(--s-3); border: none; border-radius: var(--r-md);
@@ -176,6 +178,40 @@
 
 @media (max-width: 860px) {
   .planner { grid-template-columns: 1fr; }
+}
+
+/* ---- Audit log ---- */
+.audit-payload {
+  margin: 0; font-size: var(--fs-xs); color: var(--c-muted);
+  max-width: 420px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+.pager { display: flex; align-items: center; justify-content: center; gap: var(--s-4); margin-top: var(--s-4); }
+
+/* ---- User roles picker ---- */
+.role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--s-2); margin-top: var(--s-2); }
+.role-chip {
+  display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--c-border); border-radius: var(--r-md); background: var(--c-surface);
+  font-size: var(--fs-sm); cursor: pointer;
+}
+.role-chip input { width: 16px; height: 16px; flex: none; }
+.role-chip:has(input:checked) { border-color: var(--c-primary); background: var(--c-primary-soft); }
+
+/* ---- Detail grid (appointment detail) ---- */
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--s-4); }
+.detail-grid dt { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--c-muted); margin-bottom: 2px; }
+.detail-grid dd { margin: 0; font-weight: var(--fw-medium); }
+.is-selected-row { background: var(--c-primary-soft) !important; }
+
+/* ---- Today's shift (doctor + staff consoles) ---- */
+.shift-today__head { display: flex; align-items: center; gap: var(--s-2); margin-bottom: var(--s-4); }
+.shift-today__head h2 { margin: 0; }
+.shift-today__head svg { font-size: 20px; color: var(--c-primary); }
+.shift-today__head .muted { margin-left: auto; font-size: var(--fs-sm); }
+.shift-list { list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.shift-chip {
+  display: flex; flex-direction: column; gap: 2px; padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md); background: var(--c-primary-soft); border-left: 3px solid var(--c-primary);
 }
 
 /* CMS settings: two-column field grid + colour swatches */

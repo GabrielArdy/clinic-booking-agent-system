@@ -74,10 +74,21 @@ export function cancelBooking({ reference, phone }, { signal } = {}) {
   return request('/api/booking/cancel', { method: 'POST', body: { reference, phone }, signal });
 }
 
-/* ---------------- Admin ---------------- */
-// Token is read per-call so it can live in memory/localStorage without a rebuild.
-const adminHeaders = (token) => ({ 'x-admin-token': token });
+/* ---------------- Auth (V4) ---------------- */
+// Bearer session token from POST /api/auth/login. Server still accepts the legacy
+// x-admin-token header, but the FE authenticates via login now.
+const adminHeaders = (token) => ({ Authorization: `Bearer ${token}` });
 
+export const auth = {
+  login: (body, { signal } = {}) =>
+    request('/api/auth/login', { method: 'POST', body, signal }),
+  logout: (token, { signal } = {}) =>
+    request('/api/auth/logout', { method: 'POST', headers: adminHeaders(token), signal }),
+  me: (token, { signal } = {}) =>
+    request('/api/auth/me', { headers: adminHeaders(token), signal }),
+};
+
+/* ---------------- Admin ---------------- */
 export const admin = {
   listDoctors: (token, { signal } = {}) =>
     request('/api/admin/doctors', { headers: adminHeaders(token), signal }),
@@ -98,10 +109,38 @@ export const admin = {
     request('/api/admin/schedule-exceptions', { method: 'POST', headers: adminHeaders(token), body, signal }),
   listBookings: (token, { doctorId, date }, { signal } = {}) =>
     request(`/api/admin/bookings?doctorId=${doctorId}&date=${date}`, { headers: adminHeaders(token), signal }),
+  // Audit trail (AUDIT_LOG), newest-first, paginated.
+  listAuditLogs: (token, { limit = 50, offset = 0, eventType } = {}, { signal } = {}) => {
+    const q = new URLSearchParams({ limit, offset });
+    if (eventType) q.set('eventType', eventType);
+    return request(`/api/admin/audit-logs?${q}`, { headers: adminHeaders(token), signal });
+  },
+};
+
+/* ---------------- Doctor console (Bearer, auto-scoped to the doctor) ---------------- */
+export const doctor = {
+  schedule: (token, { from, to }, { signal } = {}) =>
+    request(`/api/doctor/schedule?from=${from}&to=${to}`, { headers: adminHeaders(token), signal }),
+  shiftToday: (token, { signal } = {}) =>
+    request('/api/doctor/shift-today', { headers: adminHeaders(token), signal }),
+  listExceptions: (token, { from, to }, { signal } = {}) =>
+    request(`/api/doctor/exceptions?from=${from}&to=${to}`, { headers: adminHeaders(token), signal }),
+  createException: (token, body, { signal } = {}) =>
+    request('/api/doctor/exceptions', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  listAppointments: (token, { from, to }, { signal } = {}) =>
+    request(`/api/doctor/appointments?from=${from}&to=${to}`, { headers: adminHeaders(token), signal }),
+  getAppointment: (token, reference, { signal } = {}) =>
+    request(`/api/doctor/appointments/${encodeURIComponent(reference)}`, { headers: adminHeaders(token), signal }),
+};
+
+/* ---------------- Staff console (Bearer, auto-scoped to the staff) ---------------- */
+export const staff = {
+  shiftToday: (token, { signal } = {}) =>
+    request('/api/staff/shift-today', { headers: adminHeaders(token), signal }),
 };
 
 /* ---------------- CMS console ---------------- */
-// Content/config surface (contract V2 §CMS). Same x-admin-token, /api/cms tree.
+// Content/config surface (contract V2 §CMS). Same Bearer auth, /api/cms tree.
 // Singletons are PUT-partial; the rest are REST CRUD.
 export const cms = {
   // Clinic setting (singleton)
@@ -173,4 +212,28 @@ export const cms = {
     request('/api/cms/shift-assignments', { method: 'POST', headers: adminHeaders(token), body, signal }),
   deleteAssignment: (token, id, { signal } = {}) =>
     request(`/api/cms/shift-assignments/${id}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
+
+  // Access control (CMS_POSITION): groups + roles are read-only catalogs.
+  listGroups: (token, { signal } = {}) =>
+    request('/api/cms/groups', { headers: adminHeaders(token), signal }),
+  listRoles: (token, { signal } = {}) =>
+    request('/api/cms/roles', { headers: adminHeaders(token), signal }),
+
+  // Positions (keyed by string `code`; delete = soft)
+  listPositions: (token, { signal } = {}) =>
+    request('/api/cms/positions', { headers: adminHeaders(token), signal }),
+  createPosition: (token, body, { signal } = {}) =>
+    request('/api/cms/positions', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  updatePosition: (token, code, body, { signal } = {}) =>
+    request(`/api/cms/positions/${code}`, { method: 'PUT', headers: adminHeaders(token), body, signal }),
+  deletePosition: (token, code, { signal } = {}) =>
+    request(`/api/cms/positions/${code}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
+
+  // User accounts
+  listUsers: (token, { signal } = {}) =>
+    request('/api/cms/users', { headers: adminHeaders(token), signal }),
+  createUser: (token, body, { signal } = {}) =>
+    request('/api/cms/users', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  updateUser: (token, id, body, { signal } = {}) =>
+    request(`/api/cms/users/${id}`, { method: 'PUT', headers: adminHeaders(token), body, signal }),
 };
