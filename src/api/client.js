@@ -83,6 +83,13 @@ export const admin = {
     request('/api/admin/doctors', { headers: adminHeaders(token), signal }),
   createDoctor: (token, body, { signal } = {}) =>
     request('/api/admin/doctors', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  // Active specialties only — feeds the add-doctor <select> (V3).
+  listSpecialties: (token, { signal } = {}) =>
+    request('/api/admin/specialties', { headers: adminHeaders(token), signal }),
+  // Planner feed (V3): one doctor's appointments + exceptions + per-day summaries over a range.
+  listAppointments: (token, { doctorId, from, to }, { signal } = {}) =>
+    request(`/api/admin/appointments?doctorId=${doctorId}&from=${from}&to=${to}`,
+      { headers: adminHeaders(token), signal }),
   listSchedules: (token, doctorId, { signal } = {}) =>
     request(`/api/admin/schedules?doctorId=${doctorId}`, { headers: adminHeaders(token), signal }),
   createSchedule: (token, body, { signal } = {}) =>
@@ -122,6 +129,12 @@ export const cms = {
   // Doctors (rich: email/phone/bio/photo)
   listDoctors: (token, { signal } = {}) =>
     request('/api/cms/doctors', { headers: adminHeaders(token), signal }),
+  createDoctor: (token, body, { signal } = {}) =>
+    request('/api/cms/doctors', { method: 'POST', headers: adminHeaders(token), body, signal }),
+  updateDoctor: (token, id, body, { signal } = {}) =>
+    request(`/api/cms/doctors/${id}`, { method: 'PUT', headers: adminHeaders(token), body, signal }),
+  deleteDoctor: (token, id, { signal } = {}) =>
+    request(`/api/cms/doctors/${id}`, { method: 'DELETE', headers: adminHeaders(token), signal }),
 
   // Staff (non-doctor)
   listStaff: (token, { signal } = {}) =>

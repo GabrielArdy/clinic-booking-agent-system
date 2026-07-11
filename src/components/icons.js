@@ -33,6 +33,9 @@ import {
   BiEditAlt,
   BiPlus,
   BiCalendarCheck,
+  BiChevronLeft,
+  BiChevronRight,
+  BiEnvelope,
 } from 'react-icons/bi';
 
 export const IconBrand = BiPlusMedical;       // clinic / stethoscope mark
@@ -67,6 +70,9 @@ export const IconShift = BiTimeFive;           // slot presets / shifts
 export const IconRoster = BiCalendarEvent;     // shift assignments
 export const IconOnDuty = BiCalendarCheck;
 export const IconPhone = BiPhone;
+export const IconEmail = BiEnvelope;
 export const IconTrash = BiTrash;
 export const IconEdit = BiEditAlt;
 export const IconPlus = BiPlus;
+export const IconPrev = BiChevronLeft;   // calendar month nav
+export const IconNext = BiChevronRight;
