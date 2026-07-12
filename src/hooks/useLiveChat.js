@@ -4,6 +4,9 @@ import { buildWs } from '../lib/ws';
 // Outgoing `typing` frames are a keepalive that resets the server idle timer —
 // throttle so we send at most one per this interval, not one per keystroke.
 const TYPING_THROTTLE_MS = 2000;
+// No "stopped typing" frame exists, so a received `typing` auto-expires a bit
+// after the sender's throttle window (or a real message arrives first).
+const PEER_TYPING_TTL_MS = 3500;
 
 // The live-chat message shape isn't fully pinned in the contract, so normalize
 // defensively: accept whatever the backend calls the sender / body / id fields.
@@ -34,9 +37,11 @@ export function useLiveChat(url) {
   const [idleWarning, setIdleWarning] = useState(null); // { secondsLeft } | null (patient only)
   const [closeReason, setCloseReason] = useState(null);
   const [error, setError] = useState(null);
+  const [peerTyping, setPeerTyping] = useState(false);  // the other side is typing
 
   const wsRef = useRef(null);
   const lastTyping = useRef(0);
+  const peerTypingTimer = useRef(null);
 
   useEffect(() => {
     // setState-in-effect is intentional throughout: this effect owns an external
@@ -68,6 +73,14 @@ export function useLiveChat(url) {
         case 'message':
           setMessages((prev) => appendUnique(prev, normalize(f.message, prev.length)));
           setIdleWarning(null); // any traffic clears a pending idle warning
+          setPeerTyping(false); // their message means they stopped typing
+          clearTimeout(peerTypingTimer.current);
+          break;
+        case 'typing':
+          // Relayed only from the OTHER side, so any typing frame = peer typing.
+          setPeerTyping(true);
+          clearTimeout(peerTypingTimer.current);
+          peerTypingTimer.current = setTimeout(() => setPeerTyping(false), PEER_TYPING_TTL_MS);
           break;
         case 'session_claimed':
           if (f.session) setSession(f.session);
@@ -79,6 +92,7 @@ export function useLiveChat(url) {
           if (f.session) setSession(f.session);
           setCloseReason(f.reason ?? 'closed');
           setStatus('closed');
+          setPeerTyping(false);
           break;
         case 'error':
           setError({ message: f.error, code: f.code });
@@ -97,6 +111,7 @@ export function useLiveChat(url) {
 
     return () => {
       wsRef.current = null;
+      clearTimeout(peerTypingTimer.current);
       // Normal closure on unmount — do NOT send `complete` (that would end the
       // session for both sides; navigating away should just drop the socket).
       try { ws.close(1000); } catch { /* already closing */ }
@@ -124,7 +139,7 @@ export function useLiveChat(url) {
     if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'complete' }));
   }, []);
 
-  return { status, messages, session, idleWarning, closeReason, error, send, sendTyping, complete };
+  return { status, messages, session, peerTyping, idleWarning, closeReason, error, send, sendTyping, complete };
 }
 
 /**

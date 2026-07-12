@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { livechat } from '../../../api/client';
-import { useAsync } from '../../../hooks/useAsync';
-import { useLiveChat } from '../../../hooks/useLiveChat';
-import { buildWs } from '../../../lib/ws';
-import { toast } from '../../../lib/toast';
-import LiveThread from '../../../components/livechat/LiveThread';
-import { PageHeader, Badge, Button } from '../../../components/base';
-import { cx } from '../../../utils/cx';
-import { IconInbox, IconPhone } from '../../../components/icons';
+import { livechat } from '../../api/client';
+import { useAsync } from '../../hooks/useAsync';
+import { useLiveChat } from '../../hooks/useLiveChat';
+import { buildWs } from '../../lib/ws';
+import { toast } from '../../lib/toast';
+import LiveThread from './LiveThread';
+import { PageHeader, Badge, Button } from '../base';
+import { cx } from '../../utils/cx';
+import { IconInbox, IconPhone } from '../icons';
 
 const TABS = [
   { key: 'waiting', label: 'Waiting', color: 'warning' },
@@ -26,7 +26,9 @@ function timeOf(ts) {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
 }
 
-export default function StaffChat({ token }) {
+// Console-agnostic live-chat inbox — mounted by both the staff and admin
+// consoles (both hit the same /api/livechat endpoints).
+export default function LiveChatSection({ token }) {
   const [status, setStatus] = useState('waiting');
   const [selected, setSelected] = useState(null);
 
@@ -203,7 +205,7 @@ function ActiveRoom({ token, session, onListChange, onExit }) {
     () => buildWs('/ws', { role: 'staff', token, session: session.id }),
     [token, session.id],
   );
-  const { status, messages, closeReason, error, send, complete } = useLiveChat(url);
+  const { status, messages, peerTyping, closeReason, error, send, sendTyping, complete } = useLiveChat(url);
   const [confirm, setConfirm] = useState(false);
   const ended = status === 'closed';
 
@@ -243,8 +245,10 @@ function ActiveRoom({ token, session, onListChange, onExit }) {
         messages={messages}
         mineSender="staff"
         banner={banner}
+        peerTyping={peerTyping}
         disabled={status !== 'open'}
         onSend={ended ? undefined : send}
+        onTyping={sendTyping}
         placeholder="Reply to the patient…"
       />
     </div>

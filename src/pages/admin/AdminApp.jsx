@@ -1,7 +1,10 @@
 import { useRoute, navigate } from '../../lib/router';
-import { canAny, clearAuth } from '../../lib/auth';
+import { can, canAny, clearAuth } from '../../lib/auth';
 import { auth as authApi } from '../../api/client';
+import { useStaffChatNotifications } from '../../hooks/useLiveChat';
+import { toast } from '../../lib/toast';
 import ConsoleShell from '../../components/ConsoleShell';
+import LiveChatSection from '../../components/livechat/LiveChatSection';
 import Dashboard from './sections/Dashboard';
 import Doctors from './sections/Doctors';
 import Schedules from './sections/Schedules';
@@ -19,7 +22,7 @@ import {
   IconDashboard, IconDoctors, IconSchedules,
   IconExceptions, IconAppointments,
   IconSettings, IconSpecialty, IconStaff, IconShift, IconRoster,
-  IconAudit, IconPosition, IconUsers,
+  IconAudit, IconPosition, IconUsers, IconChat,
 } from '../../components/icons';
 import './admin.css';
 
@@ -34,6 +37,7 @@ const NAV_GROUPS = [
       { key: 'schedules', label: 'Schedules', Icon: IconSchedules, roles: ['ADM_DASHBOARD'], C: Schedules },
       { key: 'exceptions', label: 'Exceptions', Icon: IconExceptions, roles: ['ADM_DASHBOARD'], C: Exceptions },
       { key: 'appointments', label: 'Appointments', Icon: IconAppointments, roles: ['ADM_DASHBOARD'], C: Appointments },
+      { key: 'chat', label: 'Live chat', Icon: IconChat, roles: ['ADM_DASHBOARD'], C: LiveChatSection },
       { key: 'audit', label: 'Audit Log', Icon: IconAudit, roles: ['AUDIT_LOG'], C: AuditLog },
     ],
   },
@@ -59,6 +63,13 @@ const NAV_GROUPS = [
 export default function AdminApp({ auth }) {
   const route = useRoute();
   const token = auth.token;
+
+  // Dashboard socket — toast when a patient wants to connect (admins handle live
+  // chat via ADM_DASHBOARD, same as staff via STF_CHAT).
+  useStaffChatNotifications(can(auth, 'ADM_DASHBOARD') ? token : null, (f) => {
+    const who = f?.session?.patientName ? ` from ${f.session.patientName}` : '';
+    toast(`New live chat request${who}. Open Live chat to claim.`, { type: 'info' });
+  });
 
   const signOut = async () => {
     try { await authApi.logout(token); } catch { /* revoke best-effort */ }

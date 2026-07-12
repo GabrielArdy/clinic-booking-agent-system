@@ -19,7 +19,7 @@ export default function LiveChatPanel({ payload, onMinimize, onEnd }) {
     [payload.wsPath, payload.patientKey],
   );
 
-  const { status, messages, idleWarning, closeReason, error, send, sendTyping, complete } = useLiveChat(url);
+  const { status, messages, peerTyping, idleWarning, closeReason, error, send, sendTyping, complete } = useLiveChat(url);
   const ended = status === 'closed';
   const [confirmEnd, setConfirmEnd] = useState(false);
 
@@ -96,6 +96,7 @@ export default function LiveChatPanel({ payload, onMinimize, onEnd }) {
         mineSender="patient"
         banner={banner}
         footer={footer}
+        peerTyping={peerTyping}
         disabled={status !== 'open'}
         onSend={ended ? undefined : send}
         onTyping={sendTyping}

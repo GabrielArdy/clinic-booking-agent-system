@@ -24,6 +24,21 @@ function Bubble({ m, mine }) {
   );
 }
 
+// Three-dot "peer is typing" bubble (Tailwind so it renders in both the patient
+// widget and the console — no dependency on chat.css).
+function TypingBubble() {
+  return (
+    <div className="flex justify-start" aria-label="Typing" role="status">
+      <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm bg-gray-100 px-3.5 py-3">
+        {[0, 150, 300].map((d) => (
+          <span key={d} className="size-1.5 animate-bounce rounded-full bg-gray-400"
+                style={{ animationDelay: `${d}ms` }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Presentational chat thread shared by the patient handoff panel and the staff
  * room. Owns only the composer draft (one field → controlled is fine). Whether a
@@ -31,16 +46,16 @@ function Bubble({ m, mine }) {
  * `onSend` for a read-only transcript (closed sessions).
  */
 export default function LiveThread({
-  messages, mineSender, banner, footer, disabled,
+  messages, mineSender, banner, footer, disabled, peerTyping = false,
   placeholder = 'Type a message…', onSend, onTyping,
 }) {
   const endRef = useRef(null);
   const [draft, setDraft] = useState('');
 
-  // DOM autoscroll to the newest message — a real external-system sync.
+  // DOM autoscroll to the newest message (or the typing bubble) — external sync.
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
-  }, [messages.length]);
+  }, [messages.length, peerTyping]);
 
   const submit = (e) => {
     e.preventDefault();
@@ -56,6 +71,7 @@ export default function LiveThread({
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4"
            role="log" aria-live="polite" aria-relevant="additions">
         {messages.map((m) => <Bubble key={m.id} m={m} mine={m.sender === mineSender} />)}
+        {peerTyping && <TypingBubble />}
         <div ref={endRef} />
       </div>
       {footer}

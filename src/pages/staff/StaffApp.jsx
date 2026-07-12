@@ -5,13 +5,13 @@ import { useStaffChatNotifications } from '../../hooks/useLiveChat';
 import { toast } from '../../lib/toast';
 import ConsoleShell from '../../components/ConsoleShell';
 import StaffShift from './sections/StaffShift';
-import StaffChat from './sections/StaffChat';
+import LiveChatSection from '../../components/livechat/LiveChatSection';
 import { IconOnDuty, IconChat } from '../../components/icons';
 import '../admin/admin.css';
 
 const NAV = [
   { key: 'today', label: 'Today', Icon: IconOnDuty, role: 'STF_DASHBOARD', C: StaffShift },
-  { key: 'chat', label: 'Live chat', Icon: IconChat, role: 'STF_CHAT', C: StaffChat },
+  { key: 'chat', label: 'Live chat', Icon: IconChat, role: 'STF_CHAT', C: LiveChatSection },
 ];
 
 export default function StaffApp({ auth }) {
