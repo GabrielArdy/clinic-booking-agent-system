@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { admin } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
+import {
+  Button, Input, Select, Badge,
+  TableCard, Table, THead, TH, TBody, TR, TD, PageHeader,
+} from '../../../components/base';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -21,46 +25,42 @@ export default function Appointments({ token }) {
   const load = () => { if (canQuery) bookingsQ.refetch(); };
 
   return (
-    <section className="section">
-      <div className="section__head"><h1>Appointments</h1></div>
+    <section>
+      <PageHeader title="Appointments" subtitle="View bookings by doctor and date." />
 
-      <div className="filters">
-        <label className="field field--inline">
-          <span>Doctor</span>
-          <select value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
+      <div className="mb-5 flex flex-wrap items-end gap-3">
+        <div className="w-56">
+          <Select label="Doctor" value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
             <option value="">Select…</option>
             {doctors.map((d) => <option key={d.id} value={d.id}>{d.fullName}</option>)}
-          </select>
-        </label>
-        <label className="field field--inline">
-          <span>Date</span>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </label>
-        <button className="btn btn-primary" onClick={load} disabled={!canQuery}>View</button>
+          </Select>
+        </div>
+        <div className="w-44">
+          <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+        <Button onClick={load} disabled={!canQuery}>View</Button>
       </div>
 
-      {!canQuery && <p className="muted">Pick a doctor and date, then View.</p>}
-      {bookingsQ.loading && <p className="muted">Loading appointments…</p>}
-      {bookingsQ.error && <p className="form-error" role="alert">{bookingsQ.error.message}</p>}
+      {!canQuery && <p className="text-sm text-gray-500">Pick a doctor and date, then View.</p>}
+      {bookingsQ.loading && <p className="text-sm text-gray-500">Loading appointments…</p>}
+      {bookingsQ.error && <p className="text-sm text-error-600" role="alert">{bookingsQ.error.message}</p>}
       {bookingsQ.data && !bookingsQ.loading && (
-        <table className="table">
-          <thead><tr><th>Reference</th><th>Time</th><th>Patient</th><th>Status</th></tr></thead>
-          <tbody>
-            {bookings.length === 0 && <tr><td colSpan="4" className="muted">No appointments.</td></tr>}
-            {bookings.map((b) => (
-              <tr key={b.id}>
-                <td><code>{b.reference}</code></td>
-                <td>{b.startTime} – {b.endTime}</td>
-                <td>{b.patientId}</td>
-                <td>
-                  <span className={`pill ${b.status === 'active' ? 'pill-success' : 'pill-muted'}`}>
-                    {b.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableCard>
+          <Table>
+            <THead><TR className="hover:bg-transparent"><TH>Reference</TH><TH>Time</TH><TH>Patient</TH><TH>Status</TH></TR></THead>
+            <TBody>
+              {bookings.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="4" className="text-gray-500">No appointments.</TD></TR>}
+              {bookings.map((b) => (
+                <TR key={b.id}>
+                  <TD><code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{b.reference}</code></TD>
+                  <TD>{b.startTime} – {b.endTime}</TD>
+                  <TD>{b.patientId}</TD>
+                  <TD><Badge color={b.status === 'active' ? 'success' : 'gray'} dot>{b.status}</Badge></TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </TableCard>
       )}
     </section>
   );

@@ -2,11 +2,24 @@ import { useState } from 'react';
 import { doctor } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
 import { todayISO } from '../../../lib/calendar';
+import {
+  Badge, Card,
+  TableCard, Table, THead, TH, TBody, TR, TD, PageHeader,
+} from '../../../components/base';
 
 const plusDays = (iso, n) => {
   const d = new Date(iso); d.setDate(d.getDate() + n);
   return d.toISOString().slice(0, 10);
 };
+
+function DetailRow({ label, children }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">{label}</dt>
+      <dd className="mt-0.5 text-sm text-gray-900">{children}</dd>
+    </div>
+  );
+}
 
 // Own appointment list (DOC_APPOINTMENT) + on-demand detail by reference.
 export default function DoctorAppointments({ token }) {
@@ -23,57 +36,46 @@ export default function DoctorAppointments({ token }) {
   const detail = detailQ.data;
 
   return (
-    <section className="section">
-      <div className="section__head">
-        <div>
-          <h1>My appointments</h1>
-          <p className="section__sub">Next 30 days. Select a row for detail.</p>
-        </div>
-      </div>
+    <section>
+      <PageHeader title="My appointments" subtitle="Next 30 days. Select a row for detail." />
 
       {detail && (
-        <div className="card panel">
-          <h2>{detail.appointment.reference}</h2>
-          <dl className="detail-grid">
-            <div><dt>Patient</dt><dd>{detail.patient.fullName}</dd></div>
-            <div><dt>Phone</dt><dd>{detail.patient.phone}</dd></div>
-            <div><dt>Date</dt><dd>{detail.appointment.date}</dd></div>
-            <div><dt>Time</dt><dd>{detail.appointment.startTime}–{detail.appointment.endTime}</dd></div>
-            <div><dt>Status</dt><dd>
-              <span className={`pill ${detail.appointment.status === 'active' ? 'pill-success' : 'pill-muted'}`}>
-                {detail.appointment.status}
-              </span>
-            </dd></div>
+        <Card className="mb-6 p-6">
+          <h2 className="mb-4 text-base font-semibold text-gray-900">{detail.appointment.reference}</h2>
+          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+            <DetailRow label="Patient">{detail.patient.fullName}</DetailRow>
+            <DetailRow label="Phone">{detail.patient.phone}</DetailRow>
+            <DetailRow label="Date">{detail.appointment.date}</DetailRow>
+            <DetailRow label="Time">{detail.appointment.startTime}–{detail.appointment.endTime}</DetailRow>
+            <DetailRow label="Status">
+              <Badge color={detail.appointment.status === 'active' ? 'success' : 'gray'} dot>{detail.appointment.status}</Badge>
+            </DetailRow>
           </dl>
-        </div>
+        </Card>
       )}
-      {detailQ.error && <p className="form-error" role="alert">{detailQ.error.message}</p>}
+      {detailQ.error && <p className="mb-4 text-sm text-error-600" role="alert">{detailQ.error.message}</p>}
 
-      {listQ.loading && <p className="muted">Loading…</p>}
-      {listQ.error && <p className="form-error" role="alert">{listQ.error.message}</p>}
+      {listQ.loading && <p className="text-sm text-gray-500">Loading…</p>}
+      {listQ.error && <p className="text-sm text-error-600" role="alert">{listQ.error.message}</p>}
       {!listQ.loading && !listQ.error && (
-        <div className="card table-card">
-          <table className="table">
-            <thead><tr><th>Date</th><th>Time</th><th>Patient</th><th>Status</th><th>Ref</th></tr></thead>
-            <tbody>
-              {appointments.length === 0 && <tr><td colSpan="5" className="muted">No appointments in the next 30 days.</td></tr>}
+        <TableCard>
+          <Table>
+            <THead><TR className="hover:bg-transparent"><TH>Date</TH><TH>Time</TH><TH>Patient</TH><TH>Status</TH><TH>Ref</TH></TR></THead>
+            <TBody>
+              {appointments.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="5" className="text-gray-500">No appointments in the next 30 days.</TD></TR>}
               {appointments.map((a) => (
-                <tr key={a.id} className={ref === a.reference ? 'is-selected-row' : ''}
-                    style={{ cursor: 'pointer' }} onClick={() => setRef(a.reference)}>
-                  <td>{a.date}</td>
-                  <td>{a.startTime}–{a.endTime}</td>
-                  <td>{a.patient.fullName}</td>
-                  <td>
-                    <span className={`pill ${a.status === 'active' ? 'pill-success' : 'pill-muted'}`}>
-                      {a.status}
-                    </span>
-                  </td>
-                  <td><code>{a.reference}</code></td>
-                </tr>
+                <TR key={a.id} onClick={() => setRef(a.reference)}
+                    className={`cursor-pointer ${ref === a.reference ? 'bg-brand-50/60 hover:bg-brand-50/60' : ''}`}>
+                  <TD className="font-medium text-gray-900">{a.date}</TD>
+                  <TD>{a.startTime}–{a.endTime}</TD>
+                  <TD>{a.patient.fullName}</TD>
+                  <TD><Badge color={a.status === 'active' ? 'success' : 'gray'} dot>{a.status}</Badge></TD>
+                  <TD><code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{a.reference}</code></TD>
+                </TR>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </TableCard>
       )}
     </section>
   );

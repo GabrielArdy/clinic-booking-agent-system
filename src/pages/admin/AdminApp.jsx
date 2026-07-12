@@ -1,6 +1,10 @@
 import { useRoute, navigate } from '../../lib/router';
-import { canAny, clearAuth } from '../../lib/auth';
+import { can, canAny, clearAuth } from '../../lib/auth';
 import { auth as authApi } from '../../api/client';
+import { useStaffChatNotifications } from '../../hooks/useLiveChat';
+import { toast } from '../../lib/toast';
+import ConsoleShell from '../../components/ConsoleShell';
+import LiveChatSection from '../../components/livechat/LiveChatSection';
 import Dashboard from './sections/Dashboard';
 import Doctors from './sections/Doctors';
 import Schedules from './sections/Schedules';
@@ -15,10 +19,10 @@ import CmsRoster from './sections/CmsRoster';
 import CmsPositions from './sections/CmsPositions';
 import CmsUsers from './sections/CmsUsers';
 import {
-  IconBrand, IconDashboard, IconDoctors, IconSchedules,
-  IconExceptions, IconAppointments, IconBack, IconSignOut,
+  IconDashboard, IconDoctors, IconSchedules,
+  IconExceptions, IconAppointments,
   IconSettings, IconSpecialty, IconStaff, IconShift, IconRoster,
-  IconAudit, IconPosition, IconUsers,
+  IconAudit, IconPosition, IconUsers, IconChat,
 } from '../../components/icons';
 import './admin.css';
 
@@ -33,6 +37,7 @@ const NAV_GROUPS = [
       { key: 'schedules', label: 'Schedules', Icon: IconSchedules, roles: ['ADM_DASHBOARD'], C: Schedules },
       { key: 'exceptions', label: 'Exceptions', Icon: IconExceptions, roles: ['ADM_DASHBOARD'], C: Exceptions },
       { key: 'appointments', label: 'Appointments', Icon: IconAppointments, roles: ['ADM_DASHBOARD'], C: Appointments },
+      { key: 'chat', label: 'Live chat', Icon: IconChat, roles: ['ADM_DASHBOARD'], C: LiveChatSection },
       { key: 'audit', label: 'Audit Log', Icon: IconAudit, roles: ['AUDIT_LOG'], C: AuditLog },
     ],
   },
@@ -59,6 +64,13 @@ export default function AdminApp({ auth }) {
   const route = useRoute();
   const token = auth.token;
 
+  // Dashboard socket — toast when a patient wants to connect (admins handle live
+  // chat via ADM_DASHBOARD, same as staff via STF_CHAT).
+  useStaffChatNotifications(can(auth, 'ADM_DASHBOARD') ? token : null, (f) => {
+    const who = f?.session?.patientName ? ` from ${f.session.patientName}` : '';
+    toast(`New live chat request${who}. Open Live chat to claim.`, { type: 'info' });
+  });
+
   const signOut = async () => {
     try { await authApi.logout(token); } catch { /* revoke best-effort */ }
     clearAuth();
@@ -76,39 +88,14 @@ export default function AdminApp({ auth }) {
   const Section = active?.C;
 
   return (
-    <div className="admin">
-      <aside className="admin__side">
-        <a className="admin__brand" href="#/">
-          <IconBrand aria-hidden="true" /> City Care Clinic
-        </a>
-        <nav className="admin__nav" aria-label="Admin sections">
-          {groups.map((group) => (
-            <div className="admin__navgroup" key={group.label}>
-              <p className="admin__navlabel">{group.label}</p>
-              {group.items.map(({ key, label, Icon }) => (
-                <button
-                  key={key}
-                  className={`admin__navitem ${active?.key === key ? 'is-active' : ''}`}
-                  aria-current={active?.key === key ? 'page' : undefined}
-                  onClick={() => navigate(`/admin/${key}`)}
-                >
-                  <Icon aria-hidden="true" /> {label}
-                </button>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <div className="admin__side-foot">
-          {auth.user && <p className="admin__who">{auth.user.fullName ?? auth.user.email}</p>}
-          <button className="admin__navitem" onClick={() => navigate('/')}><IconBack aria-hidden="true" /> Back to booking</button>
-          <button className="admin__navitem" onClick={signOut}><IconSignOut aria-hidden="true" /> Sign out</button>
-        </div>
-      </aside>
-
-      <main className="admin__main">
-        {Section ? <Section token={token} auth={auth} />
-          : <p className="muted">You don’t have access to any admin sections.</p>}
-      </main>
-    </div>
+    <ConsoleShell
+      brand="City Care Clinic" brandHref="#/"
+      groups={groups} activeKey={active?.key}
+      onNavigate={(key) => navigate(`/admin/${key}`)}
+      user={auth.user} onSignOut={signOut}
+    >
+      {Section ? <Section token={token} auth={auth} />
+        : <p className="text-sm text-gray-500">You don&rsquo;t have access to any admin sections.</p>}
+    </ConsoleShell>
   );
 }

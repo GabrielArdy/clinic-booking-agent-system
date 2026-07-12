@@ -3,6 +3,11 @@ import { admin, cms } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
 import Modal from '../../../components/Modal';
 import { IconPlus } from '../../../components/icons';
+import {
+  Button, Input, Select, Checkbox, Badge,
+  TableCard, Table, THead, TH, TBody, TR, TD,
+  PageHeader, FormGrid, ModalFooter,
+} from '../../../components/base';
 
 const EMPTY = { fullName: '', email: '', password: '', positionCode: '', link: '', roles: [] };
 
@@ -62,81 +67,61 @@ export default function CmsUsers({ token }) {
   const canSubmit = form.fullName.trim() && form.email.trim() && form.password && form.positionCode && !busy;
 
   return (
-    <section className="section">
-      <div className="section__head">
-        <div>
-          <h1>User accounts</h1>
-          <p className="section__sub">Login accounts, positions, and data links.</p>
-        </div>
-        <div className="section__actions">
-          <button className="btn btn-ghost" onClick={usersQ.refetch}>Refresh</button>
-          <button className="btn btn-primary" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add user</button>
-        </div>
-      </div>
+    <section>
+      <PageHeader title="User accounts" subtitle="Login accounts, positions, and data links.">
+        <Button variant="secondary" onClick={usersQ.refetch}>Refresh</Button>
+        <Button iconLeading={IconPlus} onClick={() => setOpen(true)}>Add user</Button>
+      </PageHeader>
 
-      {error && !open && <p className="form-error" role="alert">{error}</p>}
-      {usersQ.loading && <p className="muted">Loading users…</p>}
-      {usersQ.error && <p className="form-error" role="alert">{usersQ.error.message}</p>}
+      {error && !open && <p className="mb-4 text-sm text-error-600" role="alert">{error}</p>}
+      {usersQ.loading && <p className="text-sm text-gray-500">Loading users…</p>}
+      {usersQ.error && <p className="text-sm text-error-600" role="alert">{usersQ.error.message}</p>}
       {!usersQ.loading && !usersQ.error && (
-        <div className="card table-card">
-          <table className="table">
-            <thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Roles</th><th>Status</th><th></th></tr></thead>
-            <tbody>
-              {users.length === 0 && <tr><td colSpan="6" className="muted">No users yet.</td></tr>}
+        <TableCard>
+          <Table>
+            <THead><TR className="hover:bg-transparent"><TH>Name</TH><TH>Email</TH><TH>Position</TH><TH>Roles</TH><TH>Status</TH><TH /></TR></THead>
+            <TBody>
+              {users.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="6" className="text-gray-500">No users yet.</TD></TR>}
               {users.map((u) => {
                 const inactive = u.status === 'INACTIVE';
                 return (
-                  <tr key={u.id}>
-                    <td>{u.fullName}</td>
-                    <td>{u.email}</td>
-                    <td>{u.positionName ?? posName(u.positionCode)}</td>
-                    <td className="muted">{(u.roles ?? []).length} role(s)</td>
-                    <td>
-                      <span className={`pill ${inactive ? 'pill-muted' : 'pill-success'}`}>
-                        {inactive ? 'Inactive' : 'Active'}
-                      </span>
-                    </td>
-                    <td className="row-actions">
-                      <button className="btn btn-ghost btn-sm"
+                  <TR key={u.id}>
+                    <TD className="font-medium text-gray-900">{u.fullName}</TD>
+                    <TD>{u.email}</TD>
+                    <TD>{u.positionName ?? posName(u.positionCode)}</TD>
+                    <TD className="text-gray-500">{(u.roles ?? []).length} role(s)</TD>
+                    <TD>
+                      <Badge color={inactive ? 'gray' : 'success'} dot>{inactive ? 'Inactive' : 'Active'}</Badge>
+                    </TD>
+                    <TD className="text-right">
+                      <Button variant="secondary" size="sm"
                               onClick={() => setStatus(u, inactive ? 'ACTIVE' : 'INACTIVE')}>
                         {inactive ? 'Activate' : 'Deactivate'}
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TD>
+                  </TR>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </TableCard>
       )}
 
-      <Modal open={open} onClose={() => setOpen(false)} size="lg" title="Add user">
-        <form onSubmit={create}>
-          <div className="form-grid">
-            <label className="field">
-              <span>Full name</span>
-              <input value={form.fullName} onChange={set('fullName')} maxLength={100} required autoFocus placeholder="Dr. Amanda Putri" />
-            </label>
-            <label className="field">
-              <span>Email</span>
-              <input type="email" value={form.email} onChange={set('email')} maxLength={200} required placeholder="amanda@clinic.test" />
-            </label>
-            <label className="field">
-              <span>Password</span>
-              <input type="password" value={form.password} onChange={set('password')} minLength={8} required
-                     autoComplete="new-password" placeholder="Initial password" />
-            </label>
-            <label className="field">
-              <span>Position</span>
-              <select value={form.positionCode} onChange={set('positionCode')} required
-                      disabled={posQ.loading || !!posQ.error}>
-                <option value="">{posQ.loading ? 'Loading…' : 'Select a position…'}</option>
-                {positions.map((p) => <option key={p.positionCode} value={p.positionCode}>{p.positionName} ({p.positionCode})</option>)}
-              </select>
-            </label>
-            <label className="field field--full">
-              <span>Link to <em className="opt">optional</em></span>
-              <select value={form.link} onChange={set('link')}>
+      <Modal open={open} onClose={() => setOpen(false)} size="lg" title="Add user"
+             subtitle="Create a login and assign a position.">
+        <form onSubmit={create} className="flex flex-col gap-5">
+          <FormGrid>
+            <Input label="Full name" value={form.fullName} onChange={set('fullName')} maxLength={100} required autoFocus placeholder="Dr. Amanda Putri" />
+            <Input label="Email" type="email" value={form.email} onChange={set('email')} maxLength={200} required placeholder="amanda@clinic.test" />
+            <Input label="Password" type="password" value={form.password} onChange={set('password')} minLength={8} required
+                   autoComplete="new-password" placeholder="Initial password" />
+            <Select label="Position" value={form.positionCode} onChange={set('positionCode')} required
+                    disabled={posQ.loading || !!posQ.error}>
+              <option value="">{posQ.loading ? 'Loading…' : 'Select a position…'}</option>
+              {positions.map((p) => <option key={p.positionCode} value={p.positionCode}>{p.positionName} ({p.positionCode})</option>)}
+            </Select>
+            <div className="sm:col-span-2">
+              <Select label="Link to (optional)" value={form.link} onChange={set('link')}>
                 <option value="">No data link</option>
                 <optgroup label="Doctor">
                   {doctors.map((d) => <option key={`d${d.id}`} value={`doctor:${d.id}`}>{d.fullName}</option>)}
@@ -144,30 +129,26 @@ export default function CmsUsers({ token }) {
                 <optgroup label="Staff">
                   {staff.map((s) => <option key={`s${s.id}`} value={`staff:${s.id}`}>{s.fullName}</option>)}
                 </optgroup>
-              </select>
-            </label>
-          </div>
+              </Select>
+            </div>
+          </FormGrid>
 
-          <div className="field field--full">
-            <span>Roles <em className="opt">optional — blank uses the position’s defaults</em></span>
-            <div className="role-grid">
-              {rolesQ.loading && <span className="muted">Loading roles…</span>}
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-gray-700">Roles <span className="font-normal text-gray-400">— blank uses the position&rsquo;s defaults</span></span>
+            <div className="grid grid-cols-2 gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-3">
+              {rolesQ.loading && <span className="text-sm text-gray-500">Loading roles…</span>}
               {roles.map((r) => (
-                <label key={r.roleCode} className="role-chip">
-                  <input type="checkbox" checked={form.roles.includes(r.roleCode)} onChange={() => toggleRole(r.roleCode)} />
-                  <span>{r.roleName ?? r.roleCode}</span>
-                </label>
+                <Checkbox key={r.roleCode} label={r.roleName ?? r.roleCode}
+                          checked={form.roles.includes(r.roleCode)} onChange={() => toggleRole(r.roleCode)} />
               ))}
             </div>
           </div>
 
-          {error && <p className="form-error" role="alert">{error}</p>}
-          <div className="modal__foot">
-            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
-              {busy ? 'Creating…' : 'Create user'}
-            </button>
-          </div>
+          {error && <p className="text-sm text-error-600" role="alert">{error}</p>}
+          <ModalFooter>
+            <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={!canSubmit}>{busy ? 'Creating…' : 'Create user'}</Button>
+          </ModalFooter>
         </form>
       </Modal>
     </section>
