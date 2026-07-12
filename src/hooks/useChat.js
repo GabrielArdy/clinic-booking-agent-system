@@ -14,6 +14,7 @@ export function useChat() {
   const [ready, setReady] = useState(false);           // initial load finished
 
   const inflight = useRef(null); // AbortController for the current turn
+  const started = useRef(false); // guards the one-time bootstrap (StrictMode double-invokes effects)
 
   const applyTurn = useCallback((t) => {
     setTurn(t);
@@ -57,6 +58,8 @@ export function useChat() {
   // Bootstrap: rehydrate an existing session's transcript, else start fresh.
   // Runs once — external-system sync (network + storage), the legit use of effect.
   useEffect(() => {
+    if (started.current) return undefined; // StrictMode/dev remount → don't greet twice
+    started.current = true;
     const ctrl = new AbortController();
     const sid = getSessionId();
     (async () => {
