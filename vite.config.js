@@ -14,6 +14,8 @@ export default defineConfig({
     proxy: {
       '/api': { target, changeOrigin: true },
       '/health': { target, changeOrigin: true },
+      // Live chat hub — ws:true so the WebSocket upgrade is proxied too.
+      '/ws': { target, changeOrigin: true, ws: true },
     },
   },
 })

@@ -6,7 +6,7 @@ The entire patient booking journey is driven by **one stateful endpoint** (`POST
 
 - **Stack:** React 19 + Vite 8, zero routing/state dependencies
 - **Design:** teal medical system (blended from the client mockups), Inter, WCAG AA
-- **Surfaces:** public booking chat + token-gated admin console
+- **Surfaces:** public booking chat + real-time live chat with staff + role-gated admin / doctor / staff consoles
 
 ---
 
@@ -36,7 +36,17 @@ Tap the launcher (or "Chat with us") to open the booking chat: greeting, progres
 
 ![Admin schedules](docs/screenshots/04-admin-schedules.png)
 
-> Screenshots run against a small mock backend (see [Regenerating screenshots](#regenerating-screenshots)). Point the app at the real backend to use live data.
+### Live chat with staff
+
+Patients can pick **Connect with staff** in the booking chat; after a short intake the bot hands off to a real staff member over a WebSocket. The widget shows the connection state, the live conversation, and a peer **typing** animation.
+
+![Patient live chat handoff with typing indicator](docs/screenshots/08-patient-livechat.png)
+
+Staff (and admins) work the queue from a two-pane **Live chat** console — Waiting / Active / Closed tabs on the left, the conversation on the right. Claim a waiting patient, reply in real time, and Complete to close the room for both sides.
+
+![Staff live chat console — queue and active conversation](docs/screenshots/07-staff-livechat.png)
+
+> Screenshots are generated headlessly with the network stubbed (see [Regenerating screenshots](#regenerating-screenshots)). Point the app at the real backend to use live data.
 
 ---
 
@@ -59,6 +69,13 @@ Tap the launcher (or "Chat with us") to open the booking chat: greeting, progres
 - **Exceptions** — block a whole day or a window (`POST /api/admin/schedule-exceptions`).
 - **Appointments** — bookings by doctor + date (`GET /api/admin/bookings`).
 - Admin token stored in `localStorage`, sent as `x-admin-token`. UI branches on error `code`, not message strings.
+
+### Live chat with staff
+- **Patient handoff** — the bot's *Connect with staff* purpose collects name → title → phone, then returns `liveChat: { sessionId, patientKey, wsPath }`; the widget switches from `POST /api/chat` to a WebSocket at `/ws?role=patient&key=…`. The `patientKey` is issued once, so it's persisted (`localStorage`) to survive a reload.
+- **Staff/admin console** — a shared two-pane inbox (`components/livechat/LiveChatSection.jsx`): Waiting / Active / Closed tabs, **Claim** a waiting session, live room over `/ws?role=staff&token&session`, and **Complete** (with confirm) to close for both sides.
+- **Realtime frames** — `history`, `message` (echoed to the sender → deduped by id, no optimistic append), **`typing`** (relayed to the peer → drives the typing animation, auto-expires), `idle_warning` (patient countdown), `session_closed`, plus a dashboard `new_session` toast socket.
+- **One active session per staff** — claiming while busy surfaces `STAFF_BUSY`; losing the race surfaces `SLOT_TAKEN`. Outgoing `typing` is throttled (keepalive that also resets the 3-min idle auto-close).
+- Realtime logic lives in one hook, `hooks/useLiveChat.js` (a WebSocket is a genuine external system — the sanctioned use of `useEffect` + cleanup).
 
 ---
 
@@ -148,4 +165,11 @@ Full contract in [`mockups/API_CONTRACT.md`](mockups/API_CONTRACT.md). Key point
 
 ## Regenerating screenshots
 
-Screenshots are captured with headless Chrome (no Puppeteer dependency) driven over the DevTools Protocol, against a small zero-dep mock backend. To reproduce: run a backend on `:3000` (or the mock), `npm run dev`, launch Chrome with `--remote-debugging-port=9222`, then drive `Page.navigate` + `Page.captureScreenshot` per view. Output goes to `docs/screenshots/`.
+Screenshots are captured with **Puppeteer** (`scripts/screenshots.mjs`). No backend required — the script stubs `fetch` and `WebSocket` in-page (`evaluateOnNewDocument`) with a seeded conversation, so captures are deterministic (including the live-chat room and typing animation).
+
+```bash
+npm run dev          # in one terminal (http://localhost:5173)
+npm run screenshots  # in another — writes docs/screenshots/*.png
+```
+
+Override the target with `SCREENSHOT_BASE=http://host:port npm run screenshots`. To shoot against a **real** backend instead of the stubs, edit the `install()` stub out of the script and log in normally.
