@@ -3,18 +3,18 @@ import { cms } from '../../../api/client';
 import { useCrud } from '../../../hooks/useCrud';
 import Modal from '../../../components/Modal';
 import { IconTrash, IconPlus } from '../../../components/icons';
+import {
+  Button, Input,
+  Table, THead, TH, TBody, TR, TD,
+  PageHeader, FormGrid, ModalFooter, Panel,
+} from '../../../components/base';
 
 // Slot presets (reusable consultation lengths) + shift templates. Both are hard
 // deletes per the contract, so the trash button removes the row outright.
 export default function CmsScheduling({ token }) {
   return (
-    <section className="section">
-      <div className="section__head">
-        <div>
-          <h1>Scheduling</h1>
-          <p className="section__sub">Reusable slot lengths and named shift templates.</p>
-        </div>
-      </div>
+    <section className="flex flex-col gap-6">
+      <PageHeader title="Scheduling" subtitle="Reusable slot lengths and named shift templates." />
       <SlotPresets token={token} />
       <Shifts token={token} />
     </section>
@@ -40,58 +40,46 @@ function SlotPresets({ token }) {
   };
 
   return (
-    <div className="card panel">
-      <div className="panel-head">
-        <h2>Slot presets</h2>
-        <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add preset</button>
-      </div>
-
-      {loading && <p className="muted">Loading presets…</p>}
-      {error && <p className="form-error" role="alert">{error.message}</p>}
+    <Panel title="Slot presets"
+           action={<Button size="sm" iconLeading={IconPlus} onClick={() => setOpen(true)}>Add preset</Button>}>
+      {loading && <p className="px-5 py-4 text-sm text-gray-500">Loading presets…</p>}
+      {error && <p className="px-5 py-4 text-sm text-error-600" role="alert">{error.message}</p>}
       {!loading && !error && (
-        <table className="table">
-          <thead><tr><th>ID</th><th>Label</th><th>Minutes</th><th aria-label="Actions"></th></tr></thead>
-          <tbody>
-            {items.length === 0 && <tr><td colSpan="4" className="muted">No presets yet.</td></tr>}
+        <Table>
+          <THead><TR className="hover:bg-transparent"><TH>ID</TH><TH>Label</TH><TH>Minutes</TH><TH aria-label="Actions" /></TR></THead>
+          <TBody>
+            {items.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="4" className="text-gray-500">No presets yet.</TD></TR>}
             {items.map((p) => (
-              <tr key={p.id}>
-                <td>{p.id}</td>
-                <td>{p.label}</td>
-                <td>{p.minutes} min</td>
-                <td className="row-actions">
-                  <button className="icon-btn icon-btn--danger" onClick={() => del(p.id)}
-                          aria-label={`Delete ${p.label}`}><IconTrash /></button>
-                </td>
-              </tr>
+              <TR key={p.id}>
+                <TD className="text-gray-500">{p.id}</TD>
+                <TD className="font-medium text-gray-900">{p.label}</TD>
+                <TD>{p.minutes} min</TD>
+                <TD className="text-right">
+                  <Button variant="destructive-secondary" size="sm" className="size-9 px-0"
+                          onClick={() => del(p.id)} aria-label={`Delete ${p.label}`} iconLeading={IconTrash} />
+                </TD>
+              </TR>
             ))}
-          </tbody>
-        </table>
+          </TBody>
+        </Table>
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Add slot preset">
-        <form onSubmit={submit}>
-          <div className="form-grid">
-            <label className="field">
-              <span>Label</span>
-              <input value={label} onChange={(e) => setLabel(e.target.value)}
-                     maxLength={60} required autoFocus placeholder="Standard consult" />
-            </label>
-            <label className="field">
-              <span>Minutes</span>
-              <input type="number" min="5" max="240" value={minutes}
-                     onChange={(e) => setMinutes(e.target.value)} required placeholder="30" />
-            </label>
-          </div>
-          {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
-          <div className="modal__foot">
-            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={busy || !label.trim() || !minutes}>
-              {busy ? 'Saving…' : 'Add preset'}
-            </button>
-          </div>
+        <form onSubmit={submit} className="flex flex-col gap-5">
+          <FormGrid>
+            <Input label="Label" value={label} onChange={(e) => setLabel(e.target.value)}
+                   maxLength={60} required autoFocus placeholder="Standard consult" />
+            <Input label="Minutes" type="number" min="5" max="240" value={minutes}
+                   onChange={(e) => setMinutes(e.target.value)} required placeholder="30" />
+          </FormGrid>
+          {mutError && <p className="text-sm text-error-600" role="alert">{mutError.message}</p>}
+          <ModalFooter>
+            <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={busy || !label.trim() || !minutes}>{busy ? 'Saving…' : 'Add preset'}</Button>
+          </ModalFooter>
         </form>
       </Modal>
-    </div>
+    </Panel>
   );
 }
 
@@ -115,60 +103,45 @@ function Shifts({ token }) {
   };
 
   return (
-    <div className="card panel">
-      <div className="panel-head">
-        <h2>Shift templates</h2>
-        <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add shift</button>
-      </div>
-
-      {loading && <p className="muted">Loading shifts…</p>}
-      {error && <p className="form-error" role="alert">{error.message}</p>}
+    <Panel title="Shift templates"
+           action={<Button size="sm" iconLeading={IconPlus} onClick={() => setOpen(true)}>Add shift</Button>}>
+      {loading && <p className="px-5 py-4 text-sm text-gray-500">Loading shifts…</p>}
+      {error && <p className="px-5 py-4 text-sm text-error-600" role="alert">{error.message}</p>}
       {!loading && !error && (
-        <table className="table">
-          <thead><tr><th>ID</th><th>Name</th><th>Window</th><th aria-label="Actions"></th></tr></thead>
-          <tbody>
-            {items.length === 0 && <tr><td colSpan="4" className="muted">No shifts yet.</td></tr>}
+        <Table>
+          <THead><TR className="hover:bg-transparent"><TH>ID</TH><TH>Name</TH><TH>Window</TH><TH aria-label="Actions" /></TR></THead>
+          <TBody>
+            {items.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="4" className="text-gray-500">No shifts yet.</TD></TR>}
             {items.map((s) => (
-              <tr key={s.id}>
-                <td>{s.id}</td>
-                <td>{s.name}</td>
-                <td>{s.startTime}–{s.endTime}</td>
-                <td className="row-actions">
-                  <button className="icon-btn icon-btn--danger" onClick={() => del(s.id)}
-                          aria-label={`Delete ${s.name}`}><IconTrash /></button>
-                </td>
-              </tr>
+              <TR key={s.id}>
+                <TD className="text-gray-500">{s.id}</TD>
+                <TD className="font-medium text-gray-900">{s.name}</TD>
+                <TD>{s.startTime}–{s.endTime}</TD>
+                <TD className="text-right">
+                  <Button variant="destructive-secondary" size="sm" className="size-9 px-0"
+                          onClick={() => del(s.id)} aria-label={`Delete ${s.name}`} iconLeading={IconTrash} />
+                </TD>
+              </TR>
             ))}
-          </tbody>
-        </table>
+          </TBody>
+        </Table>
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Add shift template">
-        <form onSubmit={submit}>
-          <div className="form-grid">
-            <label className="field">
-              <span>Name</span>
-              <input value={name} onChange={(e) => setName(e.target.value)}
-                     maxLength={60} required autoFocus placeholder="Morning" />
-            </label>
-            <label className="field">
-              <span>Start</span>
-              <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
-            </label>
-            <label className="field">
-              <span>End</span>
-              <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
-            </label>
-          </div>
-          {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
-          <div className="modal__foot">
-            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={busy || !name.trim() || !startTime || !endTime}>
-              {busy ? 'Saving…' : 'Add shift'}
-            </button>
-          </div>
+        <form onSubmit={submit} className="flex flex-col gap-5">
+          <FormGrid>
+            <Input label="Name" value={name} onChange={(e) => setName(e.target.value)}
+                   maxLength={60} required autoFocus placeholder="Morning" />
+            <Input label="Start" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
+            <Input label="End" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
+          </FormGrid>
+          {mutError && <p className="text-sm text-error-600" role="alert">{mutError.message}</p>}
+          <ModalFooter>
+            <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={busy || !name.trim() || !startTime || !endTime}>{busy ? 'Saving…' : 'Add shift'}</Button>
+          </ModalFooter>
         </form>
       </Modal>
-    </div>
+    </Panel>
   );
 }

@@ -3,6 +3,7 @@ import ChatDock from '../components/chat/ChatDock';
 import { navigate } from '../lib/router';
 import heroImg from '../assets/clinic-hero.jpg';
 import { IconBrand, IconSecure, IconPrivate, IconClock, IconChat } from '../components/icons';
+import { Button, Badge } from '../components/base';
 import './public.css';
 
 const BADGES = [
@@ -26,9 +27,7 @@ export default function PublicApp() {
           <span className="brand__mark" aria-hidden="true"><IconBrand /></span>
           <span className="brand__name">City Care Clinic</span>
         </a>
-        <button className="btn btn-ghost" onClick={() => navigate('/admin')}>
-          Admin console
-        </button>
+        <Button variant="secondary" onClick={() => navigate('/admin')}>Admin console</Button>
       </header>
 
       <main className="public__hero" style={{ '--hero-img': `url(${heroImg})` }}>
@@ -40,15 +39,11 @@ export default function PublicApp() {
             time — in just a few steps.
           </p>
           <div className="hero__cta">
-            <button className="btn btn-primary btn-lg" onClick={openChat}>
-              <IconChat aria-hidden="true" /> Chat with us
-            </button>
+            <Button size="xl" iconLeading={IconChat} onClick={openChat}>Chat with us</Button>
           </div>
           <ul className="hero__badges">
             {BADGES.map(({ Icon, label }) => (
-              <li key={label} className="pill pill-muted">
-                <Icon aria-hidden="true" /> {label}
-              </li>
+              <li key={label}><Badge color="gray" icon={Icon}>{label}</Badge></li>
             ))}
           </ul>
           <p className="hero__note">

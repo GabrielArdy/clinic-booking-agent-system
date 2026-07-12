@@ -3,6 +3,11 @@ import { cms } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
 import Modal from '../../../components/Modal';
 import { IconTrash, IconPlus } from '../../../components/icons';
+import {
+  Button, Input, Select,
+  TableCard, Table, THead, TH, TBody, TR, TD,
+  PageHeader, FormGrid, ModalFooter,
+} from '../../../components/base';
 
 const EMPTY = { positionCode: '', positionName: '', groupCode: '' };
 
@@ -42,72 +47,57 @@ export default function CmsPositions({ token }) {
   const canSubmit = form.positionCode.trim() && form.positionName.trim() && form.groupCode && !busy;
 
   return (
-    <section className="section">
-      <div className="section__head">
-        <div>
-          <h1>Positions</h1>
-          <p className="section__sub">Job positions users are assigned to.</p>
-        </div>
-        <div className="section__actions">
-          <button className="btn btn-ghost" onClick={posQ.refetch}>Refresh</button>
-          <button className="btn btn-primary" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Add position</button>
-        </div>
-      </div>
+    <section>
+      <PageHeader title="Positions" subtitle="Job positions users are assigned to.">
+        <Button variant="secondary" onClick={posQ.refetch}>Refresh</Button>
+        <Button iconLeading={IconPlus} onClick={() => setOpen(true)}>Add position</Button>
+      </PageHeader>
 
-      {error && !open && <p className="form-error" role="alert">{error}</p>}
-      {posQ.loading && <p className="muted">Loading…</p>}
-      {posQ.error && <p className="form-error" role="alert">{posQ.error.message}</p>}
+      {error && !open && <p className="mb-4 text-sm text-error-600" role="alert">{error}</p>}
+      {posQ.loading && <p className="text-sm text-gray-500">Loading…</p>}
+      {posQ.error && <p className="text-sm text-error-600" role="alert">{posQ.error.message}</p>}
       {!posQ.loading && !posQ.error && (
-        <div className="card table-card">
-          <table className="table">
-            <thead><tr><th>Code</th><th>Name</th><th>Group</th><th aria-label="Actions"></th></tr></thead>
-            <tbody>
-              {positions.length === 0 && <tr><td colSpan="4" className="muted">No positions yet.</td></tr>}
+        <TableCard>
+          <Table>
+            <THead><TR className="hover:bg-transparent"><TH>Code</TH><TH>Name</TH><TH>Group</TH><TH aria-label="Actions" /></TR></THead>
+            <TBody>
+              {positions.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="4" className="text-gray-500">No positions yet.</TD></TR>}
               {positions.map((p) => (
-                <tr key={p.positionCode}>
-                  <td><code>{p.positionCode}</code></td>
-                  <td>{p.positionName}</td>
-                  <td>{groupName(p.groupCode)}</td>
-                  <td className="row-actions">
-                    <button className="icon-btn icon-btn--danger" aria-label={`Delete ${p.positionName}`}
-                            onClick={() => remove(p.positionCode)}><IconTrash /></button>
-                  </td>
-                </tr>
+                <TR key={p.positionCode}>
+                  <TD><code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{p.positionCode}</code></TD>
+                  <TD className="font-medium text-gray-900">{p.positionName}</TD>
+                  <TD>{groupName(p.groupCode)}</TD>
+                  <TD className="text-right">
+                    <Button variant="destructive-secondary" size="sm" aria-label={`Delete ${p.positionName}`}
+                            className="size-9 px-0" onClick={() => remove(p.positionCode)} iconLeading={IconTrash} />
+                  </TD>
+                </TR>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </TableCard>
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Add position">
-        <form onSubmit={create}>
-          <div className="form-grid">
-            <label className="field">
-              <span>Code</span>
-              <input value={form.positionCode} onChange={set('positionCode')} maxLength={50} required autoFocus placeholder="D012" />
-            </label>
-            <label className="field">
-              <span>Name</span>
-              <input value={form.positionName} onChange={set('positionName')} maxLength={100} required placeholder="Specialist Doctor" />
-            </label>
-            <label className="field field--full">
-              <span>Group</span>
-              <select value={form.groupCode} onChange={set('groupCode')} required
+        <form onSubmit={create} className="flex flex-col gap-5">
+          <FormGrid>
+            <Input label="Code" value={form.positionCode} onChange={set('positionCode')} maxLength={50} required autoFocus placeholder="D012" />
+            <Input label="Name" value={form.positionName} onChange={set('positionName')} maxLength={100} required placeholder="Specialist Doctor" />
+            <div className="sm:col-span-2">
+              <Select label="Group" value={form.groupCode} onChange={set('groupCode')} required
                       disabled={groupsQ.loading || !!groupsQ.error}>
                 <option value="">
                   {groupsQ.loading ? 'Loading…' : groupsQ.error ? 'Failed to load' : 'Select a group…'}
                 </option>
                 {groups.map((g) => <option key={g.groupCode} value={g.groupCode}>{g.groupName} ({g.groupCode})</option>)}
-              </select>
-            </label>
-          </div>
-          {error && <p className="form-error" role="alert">{error}</p>}
-          <div className="modal__foot">
-            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
-              {busy ? 'Adding…' : 'Add position'}
-            </button>
-          </div>
+              </Select>
+            </div>
+          </FormGrid>
+          {error && <p className="text-sm text-error-600" role="alert">{error}</p>}
+          <ModalFooter>
+            <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={!canSubmit}>{busy ? 'Adding…' : 'Add position'}</Button>
+          </ModalFooter>
         </form>
       </Modal>
     </section>

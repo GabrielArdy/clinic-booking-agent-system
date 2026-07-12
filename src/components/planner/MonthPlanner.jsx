@@ -1,5 +1,6 @@
 import { IconPrev, IconNext, IconExceptions } from '../icons';
 import { DOW, MONTHS, monthCells, fmtLong, todayISO } from '../../lib/calendar';
+import { Button, Badge } from '../base';
 
 // Presentational month planner: calendar (per-day badges, color-coded but never
 // colour-only — WCAG 1.4.1) + selected-day list. Owns no data or fetching; the
@@ -20,11 +21,11 @@ export default function MonthPlanner({
     <div className="planner">
       <div className="card panel planner__cal">
         <div className="cal-head">
-          <button type="button" className="icon-btn" aria-label="Previous month"
-                  onClick={() => onShiftMonth(-1)}><IconPrev /></button>
+          <Button variant="secondary" size="sm" aria-label="Previous month"
+                  className="size-9 px-0" onClick={() => onShiftMonth(-1)} iconLeading={IconPrev} />
           <strong>{MONTHS[mm - 1]} {my}</strong>
-          <button type="button" className="icon-btn" aria-label="Next month"
-                  onClick={() => onShiftMonth(1)}><IconNext /></button>
+          <Button variant="secondary" size="sm" aria-label="Next month"
+                  className="size-9 px-0" onClick={() => onShiftMonth(1)} iconLeading={IconNext} />
         </div>
 
         <div className="cal-grid cal-grid--dow">
@@ -94,9 +95,7 @@ export default function MonthPlanner({
                 <strong>{a.patient.fullName}</strong>
                 <span className="muted">{a.patient.phone}</span>
               </span>
-              <span className={`pill ${a.status === 'active' ? 'pill-success' : 'pill-muted'}`}>
-                {a.status}
-              </span>
+              <Badge color={a.status === 'active' ? 'success' : 'gray'} dot>{a.status}</Badge>
               <code>{a.reference}</code>
             </li>
           ))}

@@ -1,0 +1,131 @@
+/* Untitled UI theme — Tailwind v4 layer.
+   Brand scale anchored on the client teal (#0f766e = brand-600), gray = slate.
+   Untitled UI look (proportions, shadows, rings, radii) over the client palette. */
+/* Import Tailwind WITHOUT preflight — hand-rolled global.css still styles
+   unconverted screens during migration; preflight would reset them. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+/* Hand-rolled global.css sits in the base layer so Tailwind utilities (in the
+   higher utilities layer) win over its generic input/select/textarea rules on
+   the new base components. Chat/public/admin CSS stay unlayered by design. */
+@import './global.css' layer(base);
+
+/* React Aria components render as plain DOM; enable variant selectors we use. */
+@custom-variant hover (&:hover);
+
+@theme {
+  /* Brand — teal, anchored so brand-600 is the client primary (#0f766e). */
+  --color-brand-25: #f5fefd;
+  --color-brand-50: #ecfdf7;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0f766e; /* primary action / brand */
+  --color-brand-700: #115e59; /* hover */
+  --color-brand-800: #134e4a;
+  --color-brand-900: #124039;
+  --color-brand-950: #0a2a26;
+
+  /* Gray — slate. */
+  --color-gray-25: #fcfdfe;
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
+  --color-gray-950: #020617;
+
+  /* Error — red. */
+  --color-error-25: #fffbfa;
+  --color-error-50: #fee2e2;
+  --color-error-100: #fecaca;
+  --color-error-200: #fca5a5;
+  --color-error-300: #f87171;
+  --color-error-400: #ef4444;
+  --color-error-500: #dc2626;
+  --color-error-600: #b91c1c;
+  --color-error-700: #991b1b;
+
+  /* Warning — amber. */
+  --color-warning-50: #fef3c7;
+  --color-warning-100: #fde68a;
+  --color-warning-300: #fbbf24;
+  --color-warning-400: #f59e0b;
+  --color-warning-500: #d97706;
+  --color-warning-600: #b45309;
+  --color-warning-700: #92400e;
+
+  /* Success — green. */
+  --color-success-50: #dcfce7;
+  --color-success-100: #bbf7d0;
+  --color-success-300: #4ade80;
+  --color-success-400: #22c55e;
+  --color-success-500: #16a34a;
+  --color-success-600: #15803d;
+  --color-success-700: #166534;
+
+  /* Sky accent — links (client --c-accent). */
+  --color-accent-500: #0ea5e9;
+  --color-accent-600: #0284c7;
+  --color-accent-700: #0369a1;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /* Radius — Untitled UI scale */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+
+  /* Elevation — Untitled UI shadow scale */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px -1px rgba(16, 24, 40, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.06);
+  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --shadow-xl: 0 20px 24px -4px rgba(16, 24, 40, 0.08), 0 8px 8px -4px rgba(16, 24, 40, 0.03);
+  --shadow-brand: 0 1px 2px rgba(16, 24, 40, 0.05), 0 0 0 1px rgba(15, 118, 110, 0.08);
+}
+
+/* Minimal control reset (preflight is skipped). In @layer base so component
+   utilities — e.g. the secondary button's `border border-gray-300` — still win. */
+@layer base {
+  button {
+    border: 0;
+    background-color: transparent;
+    background-image: none;
+    color: inherit;
+    line-height: inherit;
+  }
+}
+
+/* Root defaults */
+:root {
+  color-scheme: light;
+  --ring-brand: 0 0 0 4px rgba(15, 118, 110, 0.18);
+  --ring-error: 0 0 0 4px rgba(220, 38, 38, 0.18);
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-gray-900);
+}
+
+/* Untitled UI focus ring — react-aria sets data-focus-visible. */
+[data-focus-visible],
+:focus-visible {
+  outline: none;
+}

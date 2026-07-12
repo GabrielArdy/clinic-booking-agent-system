@@ -4,6 +4,11 @@ import { useCrud } from '../../../hooks/useCrud';
 import { useAsync } from '../../../hooks/useAsync';
 import Modal from '../../../components/Modal';
 import { IconTrash, IconPlus } from '../../../components/icons';
+import {
+  Button, Input, Select, Badge,
+  TableCard, Table, THead, TH, TBody, TR, TD,
+  PageHeader, FormGrid, ModalFooter,
+} from '../../../components/base';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -49,85 +54,68 @@ export default function CmsRoster({ token }) {
   };
 
   return (
-    <section className="section">
-      <div className="section__head">
-        <div>
-          <h1>Roster</h1>
-          <p className="section__sub">Who is on duty, by shift and day.</p>
-        </div>
-        <div className="section__actions">
-          <button className="btn btn-ghost" onClick={refetch}>Refresh</button>
-          <button className="btn btn-primary" onClick={() => setOpen(true)}><IconPlus aria-hidden="true" /> Assign</button>
-        </div>
+    <section>
+      <PageHeader title="Roster" subtitle="Who is on duty, by shift and day.">
+        <Button variant="secondary" onClick={refetch}>Refresh</Button>
+        <Button iconLeading={IconPlus} onClick={() => setOpen(true)}>Assign</Button>
+      </PageHeader>
+
+      <div className="mb-4 w-48">
+        <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       </div>
 
-      <div className="filters">
-        <label className="field field--sm">
-          <span>Date</span>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </label>
-      </div>
-
-      {loading && <p className="muted">Loading roster…</p>}
-      {error && <p className="form-error" role="alert">{error.message}</p>}
+      {loading && <p className="text-sm text-gray-500">Loading roster…</p>}
+      {error && <p className="text-sm text-error-600" role="alert">{error.message}</p>}
       {!loading && !error && (
-        <div className="card table-card">
-          <table className="table">
-            <thead><tr><th>Shift</th><th>Person</th><th>Type</th><th aria-label="Actions"></th></tr></thead>
-            <tbody>
-              {items.length === 0 && <tr><td colSpan="4" className="muted">Nobody assigned on {date}.</td></tr>}
+        <TableCard>
+          <Table>
+            <THead><TR className="hover:bg-transparent"><TH>Shift</TH><TH>Person</TH><TH>Type</TH><TH aria-label="Actions" /></TR></THead>
+            <TBody>
+              {items.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="4" className="text-gray-500">Nobody assigned on {date}.</TD></TR>}
               {items.map((a) => (
-                <tr key={a.id}>
-                  <td>{shiftName(a.shiftId)}</td>
-                  <td>{nameOf(a)}</td>
-                  <td><span className="pill pill-muted">{a.doctorId != null ? 'Doctor' : 'Staff'}</span></td>
-                  <td className="row-actions">
-                    <button className="icon-btn icon-btn--danger" onClick={() => del(a.id)}
-                            aria-label="Remove assignment"><IconTrash /></button>
-                  </td>
-                </tr>
+                <TR key={a.id}>
+                  <TD className="font-medium text-gray-900">{shiftName(a.shiftId)}</TD>
+                  <TD>{nameOf(a)}</TD>
+                  <TD><Badge color={a.doctorId != null ? 'brand' : 'gray'}>{a.doctorId != null ? 'Doctor' : 'Staff'}</Badge></TD>
+                  <TD className="text-right">
+                    <Button variant="destructive-secondary" size="sm" className="size-9 px-0"
+                            onClick={() => del(a.id)} aria-label="Remove assignment" iconLeading={IconTrash} />
+                  </TD>
+                </TR>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </TableCard>
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title={`Assign to shift — ${date}`}>
-        <form onSubmit={submit}>
-          <div className="form-grid">
-            <label className="field">
-              <span>Shift</span>
-              <select value={shiftId} onChange={(e) => setShiftId(e.target.value)} required>
-                <option value="" disabled>Choose…</option>
-                {shiftList.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.startTime}–{s.endTime})</option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              <span>Person</span>
-              <select value={person} onChange={(e) => setPerson(e.target.value)} required>
-                <option value="" disabled>Choose…</option>
-                {doctorList.length > 0 && (
-                  <optgroup label="Doctors">
-                    {doctorList.map((d) => <option key={`d${d.id}`} value={`doctor:${d.id}`}>{d.fullName}</option>)}
-                  </optgroup>
-                )}
-                {staffList.length > 0 && (
-                  <optgroup label="Staff">
-                    {staffList.map((s) => <option key={`s${s.id}`} value={`staff:${s.id}`}>{s.fullName}</option>)}
-                  </optgroup>
-                )}
-              </select>
-            </label>
-          </div>
-          {mutError && <p className="form-error" role="alert">{mutError.message}</p>}
-          <div className="modal__foot">
-            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={busy || !shiftId || !person}>
-              {busy ? 'Assigning…' : 'Assign'}
-            </button>
-          </div>
+        <form onSubmit={submit} className="flex flex-col gap-5">
+          <FormGrid>
+            <Select label="Shift" value={shiftId} onChange={(e) => setShiftId(e.target.value)} required>
+              <option value="" disabled>Choose…</option>
+              {shiftList.map((s) => (
+                <option key={s.id} value={s.id}>{s.name} ({s.startTime}–{s.endTime})</option>
+              ))}
+            </Select>
+            <Select label="Person" value={person} onChange={(e) => setPerson(e.target.value)} required>
+              <option value="" disabled>Choose…</option>
+              {doctorList.length > 0 && (
+                <optgroup label="Doctors">
+                  {doctorList.map((d) => <option key={`d${d.id}`} value={`doctor:${d.id}`}>{d.fullName}</option>)}
+                </optgroup>
+              )}
+              {staffList.length > 0 && (
+                <optgroup label="Staff">
+                  {staffList.map((s) => <option key={`s${s.id}`} value={`staff:${s.id}`}>{s.fullName}</option>)}
+                </optgroup>
+              )}
+            </Select>
+          </FormGrid>
+          {mutError && <p className="text-sm text-error-600" role="alert">{mutError.message}</p>}
+          <ModalFooter>
+            <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={busy || !shiftId || !person}>{busy ? 'Assigning…' : 'Assign'}</Button>
+          </ModalFooter>
         </form>
       </Modal>
     </section>

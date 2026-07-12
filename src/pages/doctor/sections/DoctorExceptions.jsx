@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { doctor } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
 import { todayISO } from '../../../lib/calendar';
+import {
+  Button, Input, Checkbox, Card,
+  TableCard, Table, THead, TH, TBody, TR, TD, PageHeader,
+} from '../../../components/base';
 
 const plusDays = (iso, n) => {
   const d = new Date(iso); d.setDate(d.getDate() + n);
@@ -36,67 +40,47 @@ export default function DoctorExceptions({ token }) {
   };
 
   return (
-    <section className="section">
-      <div className="section__head">
-        <div>
-          <h1>Blocking time</h1>
-          <p className="section__sub">Block a whole day or a window when you’re unavailable.</p>
-        </div>
-      </div>
+    <section>
+      <PageHeader title="Blocking time" subtitle="Block a whole day or a window when you’re unavailable." />
 
-      <form className="card panel" onSubmit={create}>
-        <h2>Add blocking time</h2>
-        <div className="form-row">
-          <label className="field field--sm">
-            <span>Date</span>
-            <input type="date" value={form.date} min={from} onChange={set('date')} required />
-          </label>
-          <label className="field field--check">
-            <input type="checkbox" checked={form.allDay}
-                   onChange={(e) => setForm((f) => ({ ...f, allDay: e.target.checked }))} />
-            <span>Whole day</span>
-          </label>
+      <Card className="mb-6 p-6" as="form" onSubmit={create}>
+        <h2 className="mb-4 text-base font-semibold text-gray-900">Add blocking time</h2>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-44"><Input label="Date" type="date" value={form.date} min={from} onChange={set('date')} required /></div>
+          <div className="pb-2.5">
+            <Checkbox label="Whole day" checked={form.allDay}
+                      onChange={(e) => setForm((f) => ({ ...f, allDay: e.target.checked }))} />
+          </div>
           {!form.allDay && (
             <>
-              <label className="field field--sm">
-                <span>Start</span>
-                <input type="time" value={form.startTime} onChange={set('startTime')} required />
-              </label>
-              <label className="field field--sm">
-                <span>End</span>
-                <input type="time" value={form.endTime} onChange={set('endTime')} required />
-              </label>
+              <div className="w-32"><Input label="Start" type="time" value={form.startTime} onChange={set('startTime')} required /></div>
+              <div className="w-32"><Input label="End" type="time" value={form.endTime} onChange={set('endTime')} required /></div>
             </>
           )}
-          <label className="field">
-            <span>Reason <em className="opt">optional</em></span>
-            <input value={form.reason} onChange={set('reason')} maxLength={200} placeholder="e.g. conference" />
-          </label>
-          <button className="btn btn-primary" type="submit" disabled={busy}>
-            {busy ? 'Adding…' : 'Block time'}
-          </button>
+          <div className="min-w-56 flex-1"><Input label="Reason (optional)" value={form.reason} onChange={set('reason')} maxLength={200} placeholder="e.g. conference" /></div>
+          <Button type="submit" disabled={busy}>{busy ? 'Adding…' : 'Block time'}</Button>
         </div>
-        {error && <p className="form-error" role="alert">{error}</p>}
-      </form>
+        {error && <p className="mt-3 text-sm text-error-600" role="alert">{error}</p>}
+      </Card>
 
-      {q.loading && <p className="muted">Loading…</p>}
-      {q.error && <p className="form-error" role="alert">{q.error.message}</p>}
+      {q.loading && <p className="text-sm text-gray-500">Loading…</p>}
+      {q.error && <p className="text-sm text-error-600" role="alert">{q.error.message}</p>}
       {!q.loading && !q.error && (
-        <div className="card table-card">
-          <table className="table">
-            <thead><tr><th>Date</th><th>Time</th><th>Reason</th></tr></thead>
-            <tbody>
-              {exceptions.length === 0 && <tr><td colSpan="3" className="muted">No blocking time in the next 90 days.</td></tr>}
+        <TableCard>
+          <Table>
+            <THead><TR className="hover:bg-transparent"><TH>Date</TH><TH>Time</TH><TH>Reason</TH></TR></THead>
+            <TBody>
+              {exceptions.length === 0 && <TR className="hover:bg-transparent"><TD colSpan="3" className="text-gray-500">No blocking time in the next 90 days.</TD></TR>}
               {exceptions.map((ex) => (
-                <tr key={ex.id}>
-                  <td>{ex.date}</td>
-                  <td>{ex.startTime ? `${ex.startTime} – ${ex.endTime}` : 'All day'}</td>
-                  <td>{ex.reason ?? <span className="muted">—</span>}</td>
-                </tr>
+                <TR key={ex.id}>
+                  <TD className="font-medium text-gray-900">{ex.date}</TD>
+                  <TD>{ex.startTime ? `${ex.startTime} – ${ex.endTime}` : 'All day'}</TD>
+                  <TD className="text-gray-500">{ex.reason ?? '—'}</TD>
+                </TR>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </TableCard>
       )}
     </section>
   );

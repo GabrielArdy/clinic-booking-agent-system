@@ -35,10 +35,13 @@ import {
   BiCalendarCheck,
   BiChevronLeft,
   BiChevronRight,
+  BiChevronDown,
+  BiSearch,
   BiEnvelope,
   BiHistory,
   BiIdCard,
   BiUserPin,
+  BiMessageRoundedCheck,
 } from 'react-icons/bi';
 
 export const IconBrand = BiPlusMedical;       // clinic / stethoscope mark
@@ -58,11 +61,13 @@ export const IconWarning = BiErrorCircle;
 export const IconSignOut = BiLogOut;
 export const IconBack = BiArrowBack;
 export const IconArrowRight = BiRightArrowAlt;
-export const IconChat = BiMessageRoundedDots;  // floating launcher
+export const IconChat = BiMessageRoundedDots;  // floating launcher / live chat nav
 export const IconClose = BiX;
 export const IconMinimize = BiMinus;
 export const IconCancel = BiXCircle;           // cancelled appointment
 export const IconHandoff = BiSupport;          // agent handoff
+export const IconSupport = BiSupport;          // live chat with staff
+export const IconInbox = BiMessageRoundedCheck; // empty chat room state
 
 // CMS console
 export const IconSettings = BiCog;             // clinic settings
@@ -79,6 +84,8 @@ export const IconEdit = BiEditAlt;
 export const IconPlus = BiPlus;
 export const IconPrev = BiChevronLeft;   // calendar month nav
 export const IconNext = BiChevronRight;
+export const IconExpand = BiChevronDown; // select / disclosure caret
+export const IconSearch = BiSearch;
 
 // V4 auth / RBAC
 export const IconAudit = BiHistory;      // audit log
