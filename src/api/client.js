@@ -1,7 +1,24 @@
 // Thin fetch layer for the clinic backend. See mockups/API_CONTRACT.md.
 // Base is the backend origin; empty string uses same-origin (Vite proxy in dev).
+import { getAuth, clearAuth } from '../lib/auth';
+import { toast } from '../lib/toast';
+
 const BASE = import.meta.env.VITE_API_BASE ?? '';
 const SESSION_KEY = 'clinicSession';
+
+// Expired/forbidden session on an authenticated call → drop the token (App then
+// renders <Login/>) and surface a toast. Guarded by getAuth() so a burst of
+// parallel 401s only logs out + toasts once.
+function handleAuthFailure(status) {
+  if (!getAuth()) return;
+  clearAuth();
+  toast(
+    status === 403
+      ? 'You don’t have access to that. Please sign in again.'
+      : 'Your session has expired. Please sign in again.',
+    { type: 'error' },
+  );
+}
 
 // A typed-ish error carrying the domain `code` so UI branches on code, not string.
 export class ApiError extends Error {
@@ -38,6 +55,11 @@ async function request(path, { method = 'GET', body, headers, signal } = {}) {
   try { data = await res.json(); } catch { /* empty body */ }
 
   if (!res.ok) {
+    // Only bounce authenticated calls (Bearer header present) — the login POST
+    // carries no Authorization, so a wrong-password 401 stays on the form.
+    if ((res.status === 401 || res.status === 403) && headers?.Authorization) {
+      handleAuthFailure(res.status);
+    }
     throw new ApiError(data?.error ?? `Request failed (${res.status})`, {
       status: res.status,
       code: data?.code,
