@@ -1,9 +1,11 @@
 import { useChat } from '../../hooks/useChat';
+import { getLiveChat, clearLiveChat } from '../../api/client';
 import ProgressStepper from './ProgressStepper';
 import MessageList from './MessageList';
 import QuickReplies from './QuickReplies';
 import Composer from './Composer';
 import ConfirmationCard from './ConfirmationCard';
+import LiveChatPanel from './LiveChatPanel';
 import { IconBrand, IconWarning, IconMinimize } from '../icons';
 
 // Booking flow shows the stepper; purpose picker + check/cancel flow do not
@@ -27,6 +29,19 @@ const CARD_MODE = {
 
 export default function ChatWidget({ onClose }) {
   const { messages, turn, pending, error, ready, send, restart } = useChat();
+
+  // Handoff: once the bot returns `liveChat` (or a prior one is still stored for
+  // a resumed session), leave the REST bot loop for the WebSocket live chat.
+  const liveChat = turn?.liveChat ?? getLiveChat();
+  if (liveChat) {
+    return (
+      <LiveChatPanel
+        payload={liveChat}
+        onMinimize={onClose}                                  // keep the session; resumes on reopen
+        onEnd={() => { clearLiveChat(); restart(); }}         // drop it, back to a fresh bot
+      />
+    );
+  }
 
   const stage = turn?.stage;
   const entities = turn?.collectedEntities;

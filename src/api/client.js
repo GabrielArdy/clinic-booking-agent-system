@@ -74,6 +74,17 @@ export const getSessionId = () => localStorage.getItem(SESSION_KEY) || undefined
 export const setSessionId = (id) => id && localStorage.setItem(SESSION_KEY, id);
 export const clearSessionId = () => localStorage.removeItem(SESSION_KEY);
 
+/* ---------------- Live chat handoff (patient) ----------------
+ * The bot returns `liveChat: { sessionId, patientKey, wsPath }` exactly once
+ * (patientKey is the socket credential). Persist it so a reload can resume the
+ * WebSocket; cleared when the session closes. */
+const LIVECHAT_KEY = 'clinicLiveChat';
+export const getLiveChat = () => {
+  try { return JSON.parse(localStorage.getItem(LIVECHAT_KEY)) || null; } catch { return null; }
+};
+export const setLiveChat = (payload) => payload && localStorage.setItem(LIVECHAT_KEY, JSON.stringify(payload));
+export const clearLiveChat = () => localStorage.removeItem(LIVECHAT_KEY);
+
 /* ---------------- Patient ---------------- */
 
 // Advance the conversation one turn → AssistantTurn. Persists returned sessionId.
@@ -159,6 +170,25 @@ export const doctor = {
 export const staff = {
   shiftToday: (token, { signal } = {}) =>
     request('/api/staff/shift-today', { headers: adminHeaders(token), signal }),
+};
+
+/* ---------------- Live chat console (staff/admin, Bearer) ----------------
+ * REST side of the patient↔staff chat (ENDPOINTS_V2 §live-chat). The realtime
+ * side rides the WebSocket (see lib/ws.js + hooks/useLiveChat.js). */
+export const livechat = {
+  // Chat list page, newest first. status = 'waiting' | 'active' | 'closed'.
+  list: (token, status, { signal } = {}) =>
+    request(`/api/livechat/sessions${status ? `?status=${status}` : ''}`,
+      { headers: adminHeaders(token), signal }),
+  // Room hydration for read-only (closed) views → { session, messages }.
+  get: (token, id, { signal } = {}) =>
+    request(`/api/livechat/sessions/${id}`, { headers: adminHeaders(token), signal }),
+  // Take a waiting session. 409 STAFF_BUSY (you already have one) / SLOT_TAKEN (lost the race).
+  claim: (token, id, { signal } = {}) =>
+    request(`/api/livechat/sessions/${id}/claim`, { method: 'POST', headers: adminHeaders(token), signal }),
+  // Staff-side complete trigger (closes the room for both sides).
+  complete: (token, id, { signal } = {}) =>
+    request(`/api/livechat/sessions/${id}/complete`, { method: 'POST', headers: adminHeaders(token), signal }),
 };
 
 /* ---------------- CMS console ---------------- */
