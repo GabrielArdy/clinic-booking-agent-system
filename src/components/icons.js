@@ -35,6 +35,8 @@ import {
   BiCalendarCheck,
   BiChevronLeft,
   BiChevronRight,
+  BiChevronDown,
+  BiSearch,
   BiEnvelope,
   BiHistory,
   BiIdCard,
@@ -79,6 +81,8 @@ export const IconEdit = BiEditAlt;
 export const IconPlus = BiPlus;
 export const IconPrev = BiChevronLeft;   // calendar month nav
 export const IconNext = BiChevronRight;
+export const IconExpand = BiChevronDown; // select / disclosure caret
+export const IconSearch = BiSearch;
 
 // V4 auth / RBAC
 export const IconAudit = BiHistory;      // audit log

@@ -3,6 +3,10 @@ import { admin } from '../../../api/client';
 import { useAsync } from '../../../hooks/useAsync';
 import MonthPlanner from '../../../components/planner/MonthPlanner';
 import { WEEKDAYS, todayISO, monthKeyOf, monthRange, shiftMonthKey } from '../../../lib/calendar';
+import {
+  Button, Input, Select, Card,
+  Table, THead, TH, TBody, TR, TD, PageHeader,
+} from '../../../components/base';
 
 export default function Schedules({ token }) {
   const doctorsQ = useAsync((signal) => admin.listDoctors(token, { signal }), [token]);
@@ -57,73 +61,58 @@ export default function Schedules({ token }) {
   };
 
   return (
-    <section className="section">
-      <div className="section__head">
-        <div>
-          <h1>Schedule planner</h1>
-          <p className="section__sub">Appointments and blocked time at a glance.</p>
-        </div>
-        <label className="field field--inline" style={{ maxWidth: 260 }}>
-          <span>Doctor</span>
-          <select value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
+    <section>
+      <PageHeader title="Schedule planner" subtitle="Appointments and blocked time at a glance.">
+        <div className="w-56">
+          <Select value={doctorId} onChange={(e) => setDoctorId(e.target.value)} aria-label="Doctor">
             <option value="">Select a doctor…</option>
             {doctors.map((d) => <option key={d.id} value={d.id}>{d.fullName}</option>)}
-          </select>
-        </label>
-      </div>
+          </Select>
+        </div>
+      </PageHeader>
 
-      {!doctorId && <p className="muted">Pick a doctor to view their planner.</p>}
+      {!doctorId && <p className="text-sm text-gray-500">Pick a doctor to view their planner.</p>}
 
       {doctorId && (
-        <>
+        <div className="flex flex-col gap-6">
           <MonthPlanner
             data={apptQ.data} loading={apptQ.loading} error={apptQ.error}
             monthKey={monthKey} selected={selected}
             onSelectDate={setSelected} onShiftMonth={shiftMonth}
           />
 
-          <form className="card panel" onSubmit={addRule}>
-            <h2>Weekly availability</h2>
-            <div className="form-row">
-              <label className="field">
-                <span>Weekday</span>
-                <select value={rule.weekday} onChange={setR('weekday')}>
+          <Card className="p-6" as="form" onSubmit={addRule}>
+            <h2 className="mb-4 text-base font-semibold text-gray-900">Weekly availability</h2>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="w-40">
+                <Select label="Weekday" value={rule.weekday} onChange={setR('weekday')}>
                   {WEEKDAYS.map((w, i) => <option key={i} value={i}>{w}</option>)}
-                </select>
-              </label>
-              <label className="field field--sm">
-                <span>Start</span>
-                <input type="time" value={rule.startTime} onChange={setR('startTime')} required />
-              </label>
-              <label className="field field--sm">
-                <span>End</span>
-                <input type="time" value={rule.endTime} onChange={setR('endTime')} required />
-              </label>
-              <label className="field field--sm">
-                <span>Slot (min)</span>
-                <input type="number" min="5" max="240" value={rule.slotMinutes} onChange={setR('slotMinutes')} />
-              </label>
-              <button className="btn btn-primary" type="submit" disabled={savingRule}>
-                {savingRule ? 'Saving…' : 'Add rule'}
-              </button>
+                </Select>
+              </div>
+              <div className="w-32"><Input label="Start" type="time" value={rule.startTime} onChange={setR('startTime')} required /></div>
+              <div className="w-32"><Input label="End" type="time" value={rule.endTime} onChange={setR('endTime')} required /></div>
+              <div className="w-28"><Input label="Slot (min)" type="number" min="5" max="240" value={rule.slotMinutes} onChange={setR('slotMinutes')} /></div>
+              <Button type="submit" disabled={savingRule}>{savingRule ? 'Saving…' : 'Add rule'}</Button>
             </div>
-            {ruleError && <p className="form-error" role="alert">{ruleError}</p>}
+            {ruleError && <p className="mt-3 text-sm text-error-600" role="alert">{ruleError}</p>}
             {!rulesQ.loading && !rulesQ.error && rules.length > 0 && (
-              <table className="table" style={{ marginTop: 'var(--s-4)' }}>
-                <thead><tr><th>Weekday</th><th>Hours</th><th>Slot</th></tr></thead>
-                <tbody>
-                  {rules.map((r) => (
-                    <tr key={r.id}>
-                      <td>{WEEKDAYS[r.weekday]}</td>
-                      <td>{r.startTime} – {r.endTime}</td>
-                      <td>{r.slotMinutes} min</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+                <Table>
+                  <THead><TR className="hover:bg-transparent"><TH>Weekday</TH><TH>Hours</TH><TH>Slot</TH></TR></THead>
+                  <TBody>
+                    {rules.map((r) => (
+                      <TR key={r.id}>
+                        <TD className="font-medium text-gray-900">{WEEKDAYS[r.weekday]}</TD>
+                        <TD>{r.startTime} – {r.endTime}</TD>
+                        <TD>{r.slotMinutes} min</TD>
+                      </TR>
+                    ))}
+                  </TBody>
+                </Table>
+              </div>
             )}
-          </form>
-        </>
+          </Card>
+        </div>
       )}
     </section>
   );
